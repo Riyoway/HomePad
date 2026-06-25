@@ -1,0 +1,81 @@
+:root {
+  --bg: #f1f4f9;
+  --bg-2: #e5eaf2;
+  --fg: #111319;
+  --fg-muted: #5c6470;
+  --accent: #0b84ff;
+  --accent-2: #18a957;
+  --danger: #d9534f;
+  --tile: #fbfdff;
+  --tile-hover: #eef3f9;
+  --shadow: rgba(0, 0, 0, 0.15);
+
+  --accent-contrast: #ffffff;
+  --glass-bg: rgba(255,255,255,0.62);
+  --glass-bg-hover: rgba(255,255,255,0.78);
+  --glass-border: rgba(0,0,0,0.10);
+  --glass-border-strong: rgba(0,0,0,0.14);
+  --overlay-scrim: rgba(0,0,0,0.35);
+  --modal-bg: #fbfdff;
+  --btn-bg: #fbfdff;
+  --btn-bg-hover: #eaf1f9;
+  --input-bg: #fbfdff;
+  --chip-bg: rgba(0,0,0,0.04);
+  --chip-border: rgba(0,0,0,0.10);
+  --edge-fade-left: linear-gradient(90deg, rgba(241,244,249,0.85), rgba(241,244,249,0));
+  --edge-fade-right: linear-gradient(270deg, rgba(241,244,249,0.85), rgba(241,244,249,0));
+  --popup-bg: rgba(255,255,255,0.97);
+  --popup-border: rgba(0,0,0,0.12);
+}
+
+.modal-header,
+.modal-footer {
+  background: var(--bg-2);
+}
+
+.ctxmenu {
+  position: fixed;
+  z-index: 10000;
+  min-width: 208px;
+  background: var(--popup-bg);
+  color: var(--fg);
+  border: 1px solid var(--popup-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px var(--shadow);
+  padding: 6px 0;
+  font-size: 14px;
+  user-select: none;
+}
+.ctx-item {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ctx-item:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+.ctx-item.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+.ctx-sep {
+  margin: 6px 0;
+  border-top: 1px solid var(--glass-border);
+}
+
+body {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><circle cx='8' cy='8' r='6' fill='none' stroke='%23111319' stroke-width='2'/></svg>") 8 8, default;
+}
+.btn, .btn *,
+.app-card, .app-card *,
+.nav-arrow, .nav-arrow *,
+.tab, .tab * {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><circle cx='8' cy='8' r='6' fill='none' stroke='%23111319' stroke-width='2'/></svg>") 8 8, pointer !important;
+}
+.drag-strip {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><circle cx='8' cy='8' r='6' fill='none' stroke='%23111319' stroke-width='2'/></svg>") 8 8, default !important;
+}

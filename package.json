@@ -1,0 +1,26 @@
+{
+  "name": "lovemu",
+  "productName": "Lovemu",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Lovemu is an emulator home system launcher.",
+  "type": "module",
+  "author": "Riyo",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.5.0",
+    "@tauri-apps/plugin-dialog": "^2.2.1",
+    "@tauri-apps/plugin-opener": "^2.2.6"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.5.0",
+    "typescript": "^5.7.3",
+    "vite": "^6.2.0"
+  }
+}

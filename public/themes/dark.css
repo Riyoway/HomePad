@@ -1,0 +1,63 @@
+:root {
+  --bg: #0e0f12;
+  --bg-2: #14161a;
+  --fg: #ffffff;
+  --fg-muted: #9aa3ad;
+  --accent: #3fc1ff;
+  --accent-2: #56e39f;
+  --danger: #ff6b6b;
+  --tile: #1b1f26;
+  --tile-hover: #232a33;
+  --shadow: rgba(0, 0, 0, 0.35);
+
+  --accent-contrast: #001018;
+  --glass-bg: rgba(0,0,0,0.35);
+  --glass-bg-hover: rgba(0,0,0,0.45);
+  --glass-border: rgba(255,255,255,0.08);
+  --glass-border-strong: rgba(255,255,255,0.12);
+  --overlay-scrim: rgba(0,0,0,0.5);
+  --modal-bg: #14161a;
+  --btn-bg: #1b1f26;
+  --btn-bg-hover: #232a33;
+  --input-bg: #0e0f12;
+  --chip-bg: rgba(255,255,255,0.04);
+  --chip-border: rgba(255,255,255,0.08);
+  --edge-fade-left: linear-gradient(90deg, rgba(14,15,18,0.65), rgba(14,15,18,0));
+  --edge-fade-right: linear-gradient(270deg, rgba(14,15,18,0.65), rgba(14,15,18,0));
+  --popup-bg: rgba(20,22,26,0.96);
+  --popup-border: rgba(255,255,255,0.10);
+}
+
+.ctxmenu {
+  position: fixed;
+  z-index: 10000;
+  min-width: 208px;
+  background: var(--popup-bg);
+  color: var(--fg);
+  border: 1px solid var(--popup-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px var(--shadow);
+  padding: 6px 0;
+  font-size: 14px;
+  user-select: none;
+}
+.ctx-item {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ctx-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.ctx-item.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.ctx-sep {
+  margin: 6px 0;
+  border-top: 1px solid var(--glass-border);
+}

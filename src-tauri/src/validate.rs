@@ -1,0 +1,77 @@
+use crate::homemenu::{resolve_3ds_home, resolve_wiiu_home, resolve_wiiu_mlc};
+use crate::settings::{emulator_path, read_settings};
+use crate::state::AppState;
+use crate::systems::systems;
+use serde_json::{json, Value};
+use std::path::{Path, PathBuf};
+use tauri::State;
+
+fn rel_for(system: &str) -> Value {
+    systems()
+        .get(system)
+        .and_then(|v| v.get("homeMenu"))
+        .cloned()
+        .unwrap_or(Value::Null)
+}
+
+#[tauri::command]
+pub fn suggest_3ds_nand(state: State<AppState>) -> String {
+    let appdata = std::env::var("APPDATA").ok();
+    let mut candidates: Vec<PathBuf> = Vec::new();
+    if let Some(ad) = &appdata {
+        candidates.push(Path::new(ad).join("Borked3DS").join("nand"));
+        candidates.push(Path::new(ad).join("Citra").join("nand"));
+        candidates.push(Path::new(ad).join("Azahar").join("nand"));
+    }
+    let found: Vec<String> = candidates
+        .into_iter()
+        .filter(|p| p.is_dir())
+        .map(|p| p.to_string_lossy().to_string())
+        .collect();
+    if found.is_empty() {
+        return String::new();
+    }
+    let list_key = serde_json::to_string(&found).unwrap_or_default();
+    let mut cyc = state.nand_cycle.lock().unwrap();
+    if cyc.list_key == list_key {
+        cyc.idx = (cyc.idx + 1) % (found.len() as i64);
+    } else {
+        cyc.list_key = list_key;
+        cyc.idx = 0;
+    }
+    found.get(cyc.idx as usize).cloned().unwrap_or_default()
+}
+
+#[tauri::command]
+pub fn validate_3ds_nand(nand_dir: String) -> Value {
+    if nand_dir.is_empty() {
+        return json!({ "ok": false, "error": "NAND folder not set" });
+    }
+    let rel = rel_for("Nintendo 3DS");
+    match resolve_3ds_home(&nand_dir, &rel) {
+        Some(p) if Path::new(&p).is_file() => json!({ "ok": true, "path": p }),
+        _ => json!({ "ok": false, "error": "3DS Home Menu file not found in NAND" }),
+    }
+}
+
+#[tauri::command]
+pub fn validate_wiiu_home(emu_dir: String) -> Value {
+    if emu_dir.is_empty() {
+        return json!({ "ok": false, "error": "Wii U emulator folder not set" });
+    }
+    if resolve_wiiu_mlc(&emu_dir).is_none() {
+        return json!({ "ok": false, "error": "Cemu settings.xml / mlc_path not found (emulator folder or AppData)" });
+    }
+    let rel = rel_for("Nintendo Wii U");
+    match resolve_wiiu_home(&emu_dir, &rel) {
+        Some(p) => json!({ "ok": true, "path": p }),
+        None => json!({ "ok": false, "error": "Wii U Home Menu men.rpx not found in any region (check mlc_path)" }),
+    }
+}
+
+#[tauri::command]
+pub fn get_wiiu_mlc_path() -> String {
+    let settings = read_settings();
+    let emu_dir = emulator_path(&settings, "Nintendo Wii U").unwrap_or_default();
+    resolve_wiiu_mlc(&emu_dir).unwrap_or_default()
+}
