@@ -983,13 +983,28 @@ body.console-mode .console-hint { display: inline-flex; }
   color: var(--fg); font-weight: 700; font-size: 12px;
 }
 
-body.console-mode .content { padding-bottom: 120px; }
+body.console-mode .topbar { height: 78px; padding: 0 30px; }
+body.console-mode .brand-title { font-size: 30px; }
+body.console-mode .status { gap: 22px; }
+body.console-mode .status-item { font-size: 16px; gap: 8px; }
+body.console-mode .status-item .icon { width: 27px; height: 27px; }
+body.console-mode #controller-count-header,
+body.console-mode .status .badge { font-size: 14px; }
+
+body.console-mode .content { height: calc(100% - 78px); padding-bottom: 150px; }
 body.console-mode .app-card { width: min(46vmin, 460px); }
 body.console-mode .app-name { font-size: 20px; }
-body.console-mode .brand-title { font-size: 26px; }
 body.console-mode .app-card:focus,
 body.console-mode .app-card:focus-visible {
   outline: none;
   transform: translateY(-6px) scale(1.05);
   box-shadow: 0 0 0 4px var(--accent), 0 16px 40px var(--shadow);
 }
+
+body.console-mode .bottombar { bottom: 24px; padding: 14px 22px; border-radius: 26px; }
+body.console-mode .actions { gap: 18px; }
+body.console-mode .btn { width: 58px; height: 58px; }
+body.console-mode .btn .icon { width: 28px; height: 28px; }
+body.console-mode .nav-arrow { width: 48px; height: 78px; }
+body.console-mode .nav-arrow svg { width: 28px; height: 28px; }
+body.console-mode .console-hint { font-size: 15px; padding: 11px 18px; gap: 20px; }
