@@ -53,6 +53,8 @@ export const api = {
   openFile: (options: OpenDialogOptions = {}) => invoke<DialogResult>("open_file", { options }),
 
   quit: () => invoke("quit_app"),
+  setFullscreen: (on: boolean) => invoke<boolean>("set_fullscreen", { on }),
+  getFullscreen: () => invoke<boolean>("get_fullscreen"),
   launch: (systemName: string) => invoke<OpResult>("launch", { systemName }),
   launchAction: (systemName: string, action: string) =>
     invoke<OpResult>("launch_action", { systemName, action }),

@@ -2,8 +2,24 @@ use crate::settings::{discord_enabled, read_settings, write_settings};
 use crate::state::AppState;
 use crate::systems::systems;
 use serde_json::{json, Value};
-use tauri::{AppHandle, Emitter, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 use tauri_plugin_opener::OpenerExt;
+
+#[tauri::command]
+pub fn set_fullscreen(app: AppHandle, on: bool) -> bool {
+    if let Some(w) = app.get_webview_window("main") {
+        let _ = w.set_fullscreen(on);
+        return w.is_fullscreen().unwrap_or(on);
+    }
+    on
+}
+
+#[tauri::command]
+pub fn get_fullscreen(app: AppHandle) -> bool {
+    app.get_webview_window("main")
+        .and_then(|w| w.is_fullscreen().ok())
+        .unwrap_or(false)
+}
 
 pub fn emit_popup(app: &AppHandle, kind: &str, message: &str, duration: u32) {
     let _ = app.emit(

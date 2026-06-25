@@ -94,11 +94,21 @@
         <button class="btn" id="btn-help" aria-label="Help">
           <svg viewBox="0 0 24 24" class="icon"><path d="M12 18h.01" stroke-width="2" stroke-linecap="round"></path><path d="M9.09 9a3 3 0 1 1 5.83 1c0 2-3 2-3 4" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="9" fill="none" stroke-width="2"></circle></svg>
         </button>
+        <button class="btn" id="btn-fullscreen" aria-label="Console mode" title="Console mode (fullscreen)">
+          <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </button>
         <button class="btn" id="btn-exit" aria-label="Exit">
           <svg viewBox="0 0 24 24" class="icon"><path d="M16 17l5-5-5-5M21 12H9" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M13 21H5a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h8" fill="none" stroke-width="2"></path></svg>
         </button>
       </div>
     </footer>
+
+    <div class="console-hint" aria-hidden="true">
+      <span><span class="ckey">◀ ▶</span> Move</span>
+      <span><span class="ckey">A</span> Launch</span>
+      <span><span class="ckey">B</span> Back</span>
+      <span><span class="ckey">Esc</span> Exit</span>
+    </div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>

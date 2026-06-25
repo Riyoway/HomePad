@@ -13,6 +13,7 @@ import { openDownloaderModal } from "./ui/downloader";
 import { openControllersModal, setupGamepadIndicator } from "./ui/controllers";
 import { openHelpModal } from "./ui/help";
 import { setupStatus } from "./ui/status";
+import { setupConsoleMode, toggleConsoleMode } from "./ui/console";
 import { playClick } from "./ui/sounds";
 
 const LINKS = {
@@ -93,6 +94,7 @@ function wireFooter(): void {
   click("btn-downloader", () => openDownloaderModal());
   click("btn-website", () => void api.openExternal(LINKS.website));
   click("btn-update", () => void api.openExternal(LINKS.update));
+  click("btn-fullscreen", () => void toggleConsoleMode());
 }
 
 function boot(): void {
@@ -107,6 +109,7 @@ function boot(): void {
   setupGamepadIndicator();
   setupStatus();
   setupAppPopups();
+  setupConsoleMode();
 }
 
 if (document.readyState === "loading") {

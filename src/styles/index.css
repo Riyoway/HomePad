@@ -967,3 +967,29 @@ body {
 .pad-info .pad-sub { font-size: 12px; color: var(--fg-muted); margin-bottom: 8px; }
 .pad-info .features { margin-top: 6px; }
 .pad-actions { display: flex; align-items: center; gap: 10px; }
+
+.console-hint {
+  position: fixed; left: 18px; bottom: 16px; z-index: 6;
+  display: none; gap: 16px; align-items: center;
+  padding: 9px 14px; border-radius: 14px;
+  border: 1px solid var(--glass-border); background: var(--glass-bg);
+  backdrop-filter: blur(8px); color: var(--fg); font-size: 13px;
+}
+body.console-mode .console-hint { display: inline-flex; }
+.console-hint span { display: inline-flex; align-items: center; gap: 6px; color: var(--fg-muted); }
+.console-hint .ckey {
+  display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 7px;
+  border-radius: 6px; background: var(--btn-bg-hover); border: 1px solid var(--glass-border-strong);
+  color: var(--fg); font-weight: 700; font-size: 12px;
+}
+
+body.console-mode .content { padding-bottom: 120px; }
+body.console-mode .app-card { width: min(46vmin, 460px); }
+body.console-mode .app-name { font-size: 20px; }
+body.console-mode .brand-title { font-size: 26px; }
+body.console-mode .app-card:focus,
+body.console-mode .app-card:focus-visible {
+  outline: none;
+  transform: translateY(-6px) scale(1.05);
+  box-shadow: 0 0 0 4px var(--accent), 0 16px 40px var(--shadow);
+}
