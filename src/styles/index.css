@@ -17,14 +17,7 @@ body {
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><circle cx='8' cy='8' r='6' fill='none' stroke='%23ffffff' stroke-width='2'/></svg>") 8 8, pointer !important;
 }
 
-.topbar { -webkit-app-region: no-drag; }
-.drag-strip {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 20px;
-  -webkit-app-region: drag;
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><circle cx='8' cy='8' r='6' fill='none' stroke='%23ffffff' stroke-width='2'/></svg>") 8 8, default !important;
-}
+.topbar .brand, .topbar .status { pointer-events: none; }
 
 .topbar {
   position: relative;
