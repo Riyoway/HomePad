@@ -289,9 +289,6 @@ fn do_launch(app: &AppHandle, state: &AppState, system: &str, forced_mode: Optio
     };
 
     let discord = state.discord.clone();
-    if let Ok(mut d) = discord.lock() {
-        d.set_launching(system);
-    }
 
     match spawn_emulator(&plan) {
         Ok(()) => {
