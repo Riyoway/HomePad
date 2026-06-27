@@ -12,13 +12,13 @@ use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, State};
 
 const MAX_DOWNLOAD_BYTES: u64 = 1024 * 1024 * 1024;
-const UA: &str = "Lovemu/1.0";
+const UA: &str = "HomePad/1.0";
 
 static TMP_SEQ: AtomicU64 = AtomicU64::new(0);
 
 fn unique_tmp(ext: &str) -> std::path::PathBuf {
     let seq = TMP_SEQ.fetch_add(1, Ordering::Relaxed);
-    std::env::temp_dir().join(format!("lovemu_{}_{}.{}", std::process::id(), seq, ext))
+    std::env::temp_dir().join(format!("homepad_{}_{}.{}", std::process::id(), seq, ext))
 }
 
 fn host_of(url: &str) -> Option<String> {

@@ -872,8 +872,8 @@ export async function showSettings(): Promise<void> {
   afterSel.value = current?.emulator?.afterLaunch || "nothing";
   secGen.appendChild(row("After launching emulator", afterSel));
 
-  const dlDirInput = textInput("e.g. %LocalAppData%\\Lovemu\\Emulators");
-  dlDirInput.value = current?.downloader?.dir || "%LocalAppData%\\Lovemu\\Emulators";
+  const dlDirInput = textInput("e.g. %LocalAppData%\\HomePad\\Emulators");
+  dlDirInput.value = current?.downloader?.dir || "%LocalAppData%\\HomePad\\Emulators";
   (async () => {
     try {
       const expanded = await api.expandPath(dlDirInput.value);

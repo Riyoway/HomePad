@@ -10,7 +10,7 @@ pub fn large_image_key(system: &str) -> &'static str {
         "Nintendo Wii" => "wii",
         "Nintendo Wii U" => "wiiu",
         "Nintendo Switch" => "switch",
-        _ => "lovemu",
+        _ => "homepad",
     }
 }
 
@@ -80,7 +80,7 @@ impl DiscordManager {
     }
 
     pub fn set_idle(&mut self) {
-        self.apply("Browsing systems", "Idle", "lovemu", "Lovemu");
+        self.apply("Browsing systems", "Idle", "homepad", "HomePad");
     }
 
     pub fn set_launching(&mut self, system: &str) {

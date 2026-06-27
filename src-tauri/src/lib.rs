@@ -96,5 +96,5 @@ pub fn run() {
             melonds::melonds_validate,
         ])
         .run(tauri::generate_context!())
-        .expect("error while running Lovemu");
+        .expect("error while running HomePad");
 }

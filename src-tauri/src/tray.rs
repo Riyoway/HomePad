@@ -23,7 +23,7 @@ pub fn build(app: &App) -> tauri::Result<()> {
         .build()?;
 
     let mut builder = TrayIconBuilder::with_id("main")
-        .tooltip("Lovemu")
+        .tooltip("HomePad")
         .menu(&menu)
         .on_menu_event(|app, event| match event.id().as_ref() {
             "show" => show_main(app),

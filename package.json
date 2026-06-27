@@ -1,9 +1,9 @@
 {
-  "name": "lovemu",
-  "productName": "Lovemu",
+  "name": "homepad",
+  "productName": "HomePad",
   "private": true,
   "version": "1.0.0",
-  "description": "Lovemu is an emulator home system launcher.",
+  "description": "HomePad is an emulator home system launcher.",
   "type": "module",
   "author": "Riyo",
   "license": "MIT",

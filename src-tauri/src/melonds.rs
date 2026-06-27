@@ -256,7 +256,7 @@ mod tests {
 
     #[test]
     fn write_roundtrip_stays_valid() {
-        let dir = std::env::temp_dir().join(format!("lovemu_melon_test_{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("homepad_melon_test_{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         let d = dir.to_string_lossy().to_string();

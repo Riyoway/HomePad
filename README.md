@@ -1,6 +1,6 @@
-# Lovemu
+# HomePad
 
-A console-style launcher for Nintendo emulators. Lovemu is a frameless, controller-friendly
+A console-style launcher for Nintendo emulators. HomePad is a frameless, controller-friendly
 dashboard that lets you launch, download, and manage emulators for the DS, DSi, 3DS, Wii, Wii U,
 and Switch from one place.
 
@@ -42,6 +42,6 @@ npm run tauri build    # build a release installer
 
 ## Disclaimer
 
-Lovemu is an independent launcher and is not affiliated with or endorsed by Nintendo or any other
+HomePad is an independent launcher and is not affiliated with or endorsed by Nintendo or any other
 company. It does not include or distribute any emulators, games, BIOS, or keys — use them only where
 you have the legal right to do so. All trademarks belong to their respective owners.

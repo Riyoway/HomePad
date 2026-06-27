@@ -1,7 +1,7 @@
 use serde_json::{json, Value};
 use std::path::PathBuf;
 
-const IDENTIFIER: &str = "com.riyo.lovemu";
+const IDENTIFIER: &str = "com.riyo.homepad";
 
 pub fn config_dir() -> PathBuf {
     dirs::config_dir()
@@ -109,5 +109,5 @@ pub fn download_dir(settings: &Value) -> PathBuf {
         .ok()
         .map(PathBuf::from)
         .unwrap_or_else(config_dir);
-    base.join("Lovemu").join("Emulators")
+    base.join("HomePad").join("Emulators")
 }

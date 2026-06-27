@@ -17,8 +17,8 @@ import { setupConsoleMode, toggleConsoleMode } from "./ui/console";
 import { playClick } from "./ui/sounds";
 
 const LINKS = {
-  website: "https://github.com/Riyoway/Lovemu",
-  update: "https://github.com/Riyoway/Lovemu/releases",
+  website: "https://github.com/Riyoway/HomePad",
+  update: "https://github.com/Riyoway/HomePad/releases",
 };
 
 function setThemeLink(theme: Theme | string): void {

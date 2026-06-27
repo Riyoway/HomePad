@@ -9,7 +9,7 @@ const ICONS: Record<string, string> = {
     '<svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><path d="M12 3l9 16H3l9-16z" fill="none" stroke-width="2"></path><path d="M12 9v5" stroke-width="2" stroke-linecap="round"></path><circle cx="12" cy="17" r="1.2"></circle></svg>',
 };
 
-const CONTAINER_KEY = "__lovemu_toast_container";
+const CONTAINER_KEY = "__homepad_toast_container";
 const DUPE_WINDOW_MS = 800;
 const VISIBLE_MS = 1800;
 

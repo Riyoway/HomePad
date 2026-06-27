@@ -6,7 +6,7 @@ export function openHelpModal(): void {
   const modal = document.createElement("div");
   modal.className = "modal switch-modal";
   modal.innerHTML = `
-    <div class="modal-header">How to use Lovemu</div>
+    <div class="modal-header">How to use HomePad</div>
     <div class="modal-body">
       <div class="help-grid">
         <section class="help-card">
@@ -21,12 +21,12 @@ export function openHelpModal(): void {
           <div class="section-title">Downloader</div>
           <ul class="guide-list">
             <li>Select an emulator and press <span class="kbd">Download</span>.</li>
-            <li>Lovemu downloads the latest release and shows a popup when done.</li>
+            <li>HomePad downloads the latest release and shows a popup when done.</li>
           </ul>
         </section>
       </div>
       <div class="help-disclaimer" role="note" aria-label="Disclaimer">
-        Disclaimer: Lovemu is an independent launcher and is not affiliated with or endorsed by Nintendo or any other company. Use emulators and BIOS/keys only where you have the legal right to do so. No copyrighted content is included or distributed by this application. All trademarks and copyrights belong to their respective owners.
+        Disclaimer: HomePad is an independent launcher and is not affiliated with or endorsed by Nintendo or any other company. Use emulators and BIOS/keys only where you have the legal right to do so. No copyrighted content is included or distributed by this application. All trademarks and copyrights belong to their respective owners.
       </div>
     </div>
     <div class="modal-footer hint-bar">
