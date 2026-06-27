@@ -13,23 +13,6 @@ function currentCard(cs: HTMLElement[]): HTMLElement | null {
   return cs.find((c) => c.getAttribute("tabindex") === "0") || cs[0] || null;
 }
 
-function moveFocus(dir: number): void {
-  const cs = cards();
-  if (!cs.length) return;
-  const cur = currentCard(cs);
-  const idx = cur ? cs.indexOf(cur) : 0;
-  const next = Math.max(0, Math.min(cs.length - 1, idx + dir));
-  cs.forEach((c, i) => c.setAttribute("tabindex", i === next ? "0" : "-1"));
-  const target = cs[next];
-  target.focus();
-  target.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-}
-
-function activateFocused(): void {
-  const cur = currentCard(cards());
-  if (cur) cur.click();
-}
-
 function focusFirst(): void {
   const cs = cards();
   if (!cs.length) return;
@@ -76,17 +59,144 @@ function btn(gp: Gamepad, i: number): boolean {
   return !!gp.buttons[i]?.pressed;
 }
 
+function getVisibleFocusableElements(): HTMLElement[] {
+  const selector = "button, input, select, textarea, a[href], [tabindex]";
+  const elements = Array.from(document.querySelectorAll<HTMLElement>(selector));
+  return elements.filter((el) => {
+    if ((el as any).disabled) return false;
+    if (el.getAttribute("aria-disabled") === "true") return false;
+
+    const tabIndexAttr = el.getAttribute("tabindex");
+    if (tabIndexAttr === "-1") {
+      const role = el.getAttribute("role");
+      const isTabOrOption = role === "tab" || role === "option";
+      const isAppCard = el.classList.contains("app-card");
+      const isButton = el.tagName === "BUTTON";
+      if (!isTabOrOption && !isAppCard && !isButton) {
+        return false;
+      }
+    }
+
+    const rect = el.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return false;
+
+    const style = window.getComputedStyle(el);
+    if (style.display === "none" || style.visibility === "hidden" || style.opacity === "0") return false;
+
+    if (el.closest("[hidden]")) return false;
+    const parentOverlay = el.closest(".overlay");
+    if (parentOverlay && !parentOverlay.classList.contains("show")) return false;
+
+    return true;
+  });
+}
+
+function moveSpatialFocus(dir: "up" | "down" | "left" | "right"): void {
+  const cur = document.activeElement as HTMLElement | null;
+  const list = getVisibleFocusableElements();
+  if (!list.length) return;
+
+  if (!cur || !list.includes(cur)) {
+    const cardsList = Array.from(document.querySelectorAll<HTMLElement>("#apps .app-card"));
+    const rovingCard = cardsList.find((c) => c.getAttribute("tabindex") === "0") || cardsList[0];
+    if (rovingCard && list.includes(rovingCard)) {
+      rovingCard.focus();
+    } else {
+      list[0].focus();
+    }
+    return;
+  }
+
+  const curRect = cur.getBoundingClientRect();
+  const curCenterX = curRect.left + curRect.width / 2;
+  const curCenterY = curRect.top + curRect.height / 2;
+
+  let bestEl: HTMLElement | null = null;
+  let minScore = Infinity;
+
+  for (const el of list) {
+    if (el === cur) continue;
+    const rect = el.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const dx = centerX - curCenterX;
+    const dy = centerY - curCenterY;
+
+    let isCorrectDirection = false;
+    switch (dir) {
+      case "left":
+        isCorrectDirection = dx < -5;
+        break;
+      case "right":
+        isCorrectDirection = dx > 5;
+        break;
+      case "up":
+        isCorrectDirection = dy < -5;
+        break;
+      case "down":
+        isCorrectDirection = dy > 5;
+        break;
+    }
+
+    if (!isCorrectDirection) continue;
+
+    let score = 0;
+    if (dir === "left" || dir === "right") {
+      score = Math.abs(dx) + 4 * Math.abs(dy);
+    } else {
+      score = Math.abs(dy) + 4 * Math.abs(dx);
+    }
+
+    if (score < minScore) {
+      minScore = score;
+      bestEl = el;
+    }
+  }
+
+  if (bestEl) {
+    if (bestEl.classList.contains("app-card")) {
+      const cardsList = Array.from(document.querySelectorAll<HTMLElement>("#apps .app-card"));
+      cardsList.forEach((c) => c.setAttribute("tabindex", c === bestEl ? "0" : "-1"));
+    } else if (bestEl.classList.contains("nav-item") && bestEl.closest(".settings-nav")) {
+      const tabsList = Array.from(bestEl.closest(".settings-nav")!.querySelectorAll<HTMLElement>(".nav-item"));
+      tabsList.forEach((t) => t.setAttribute("tabindex", t === bestEl ? "0" : "-1"));
+    }
+    bestEl.focus();
+    bestEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+  }
+}
+
 function handlePad(gp: Gamepad): void {
   const now = performance.now();
   const modal = anyOverlayOpen();
 
   const axisX = gp.axes[0] ?? 0;
+  const axisY = gp.axes[1] ?? 0;
   const left = btn(gp, 14) || axisX < -DEAD;
   const right = btn(gp, 15) || axisX > DEAD;
+  const up = btn(gp, 12) || axisY < -DEAD;
+  const down = btn(gp, 13) || axisY > DEAD;
 
-  if (!modal && (left || right)) {
+  const a = btn(gp, 0);
+  const b = btn(gp, 1);
+  const start = btn(gp, 9);
+
+  if (left || right || up || down || a || b || start) {
+    document.body.classList.add("gamepad-active");
+  }
+
+  if (left || right || up || down) {
     if (now - lastMove > (dirHeld ? REPEAT : FIRST_REPEAT)) {
-      moveFocus(left ? -1 : 1);
+      let dir: "up" | "down" | "left" | "right" | null = null;
+      if (left) dir = "left";
+      else if (right) dir = "right";
+      else if (up) dir = "up";
+      else if (down) dir = "down";
+
+      if (dir) {
+        moveSpatialFocus(dir);
+      }
       lastMove = now;
       dirHeld = true;
     }
@@ -94,16 +204,22 @@ function handlePad(gp: Gamepad): void {
     dirHeld = false;
   }
 
-  const a = btn(gp, 0);
-  const b = btn(gp, 1);
-  const start = btn(gp, 9);
-
-  if (a && !prev[0] && !modal) activateFocused();
-  if (b && !prev[1]) {
-    if (modal) closeTopOverlay();
-    else if (consoleMode) void setConsoleMode(false);
+  if (a && !prev[0]) {
+    const cur = document.activeElement as HTMLElement | null;
+    if (cur) {
+      cur.click();
+    }
   }
-  if (start && !prev[9]) void toggleConsoleMode();
+  if (b && !prev[1]) {
+    if (modal) {
+      closeTopOverlay();
+    } else if (consoleMode) {
+      void setConsoleMode(false);
+    }
+  }
+  if (start && !prev[9]) {
+    void toggleConsoleMode();
+  }
 
   prev[0] = a;
   prev[1] = b;
@@ -122,6 +238,7 @@ function gamepadLoop(): void {
 
 export function setupConsoleMode(): void {
   document.addEventListener("keydown", (e) => {
+    document.body.classList.remove("gamepad-active");
     if (e.key === "F11") {
       e.preventDefault();
       void toggleConsoleMode();
@@ -130,5 +247,10 @@ export function setupConsoleMode(): void {
       void setConsoleMode(false);
     }
   });
+
+  window.addEventListener("mousedown", () => {
+    document.body.classList.remove("gamepad-active");
+  });
+
   gamepadLoop();
 }

@@ -1001,3 +1001,25 @@ body.console-mode .btn .icon { width: 28px; height: 28px; }
 body.console-mode .nav-arrow { width: 48px; height: 78px; }
 body.console-mode .nav-arrow svg { width: 28px; height: 28px; }
 body.console-mode .console-hint { font-size: 15px; padding: 11px 18px; gap: 20px; }
+
+/* Gamepad Focus Styles */
+body.gamepad-active :focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3.5px var(--accent) !important;
+}
+body.gamepad-active .app-card:focus {
+  background: var(--tile-hover);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 0 0 3.5px var(--accent), 0 10px 26px var(--shadow) !important;
+}
+body.gamepad-active .btn:focus {
+  background: var(--btn-bg-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 3.5px var(--accent), 0 6px 18px var(--shadow) !important;
+  border-color: transparent !important;
+}
+body.gamepad-active .text:focus,
+body.gamepad-active .select:focus {
+  border-color: transparent !important;
+}
+
