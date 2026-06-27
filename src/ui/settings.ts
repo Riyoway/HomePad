@@ -369,6 +369,9 @@ export async function showSettings(): Promise<void> {
     browse.title = "Browse";
     browse.setAttribute("aria-label", `Browse ${name}`);
     browse.innerHTML = FOLDER_SVG;
+    // Wii U: we need refreshMlcRow available in the browse handler;
+    // declare it here as a let so it can be referenced before definition.
+    let refreshMlcRow: (() => void) = () => {};
     browse.addEventListener("click", async () => {
       const res = await api.openDir({
         title: `Select ${name} folder`,
@@ -387,6 +390,7 @@ export async function showSettings(): Promise<void> {
             if (!v?.ok) setError(errBox, v?.error || "Wii U Home Menu not found");
             else setError(errBox, "");
           } catch {}
+          refreshMlcRow();
         }
       }
     });
@@ -407,7 +411,99 @@ export async function showSettings(): Promise<void> {
     wrap.appendChild(label);
     wrap.appendChild(ctrl);
     sysList.appendChild(wrap);
+
+    // Wii U: show the mlc_path from settings.xml so the user can inspect and edit it
+    if (name === "Nintendo Wii U") {
+      const mlcWrap = document.createElement("div");
+      mlcWrap.className = "row";
+      mlcWrap.id = "wiiu-mlc-row";
+
+      const mlcLabel = document.createElement("div");
+      mlcLabel.className = "label";
+      mlcLabel.textContent = "MLC Path (settings.xml)";
+
+      const mlcCtrl = document.createElement("div");
+      mlcCtrl.className = "control";
+
+      const mlcInput = textInput("MLC path not found");
+      mlcInput.id = "wiiu-mlc-input";
+
+      const mlcBrowse = document.createElement("button");
+      mlcBrowse.type = "button";
+      mlcBrowse.className = "btn icon-only";
+      mlcBrowse.title = "Browse MLC folder";
+      mlcBrowse.setAttribute("aria-label", "Browse Wii U MLC folder");
+      mlcBrowse.innerHTML = FOLDER_SVG;
+
+      const mlcSave = document.createElement("button");
+      mlcSave.type = "button";
+      mlcSave.className = "btn icon-only";
+      mlcSave.title = "Save MLC path to settings.xml";
+      mlcSave.setAttribute("aria-label", "Save MLC path to settings.xml");
+      mlcSave.innerHTML =
+        '<svg viewBox="0 0 24 24" class="icon"><path d="M5 13l4 4L19 7" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+      // Read-only hint showing which XML file is being used
+      const mlcHint = document.createElement("div");
+      mlcHint.id = "wiiu-mlc-hint";
+      mlcHint.style.cssText = "font-size:11px;color:var(--fg-muted);margin-top:2px;word-break:break-all;";
+
+      // Assign the real implementation now that mlcInput and mlcHint exist
+      refreshMlcRow = async () => {
+        try {
+          const info = await api.getWiiUMlcInfo();
+          mlcInput.value = info?.mlcPath || "";
+          mlcInput.placeholder = info?.mlcPath ? "" : "MLC path not found";
+          mlcHint.textContent = info?.xmlPath ? `settings.xml: ${info.xmlPath}` : "settings.xml: not found";
+          mlcSave.style.display = info?.xmlPath ? "" : "none";
+        } catch {
+          mlcHint.textContent = "Failed to read mlc info";
+          mlcSave.style.display = "none";
+        }
+      };
+
+      mlcBrowse.addEventListener("click", async () => {
+        const res = await api.openDir({
+          title: "Select Wii U MLC folder",
+          defaultPath: mlcInput.value || undefined,
+        });
+        if (res?.ok && res.path) {
+          mlcInput.value = res.path;
+        }
+      });
+
+      mlcSave.addEventListener("click", async () => {
+        const val = mlcInput.value.trim();
+        if (!val) return;
+        try {
+          const r = await api.setWiiUMlcPath(val);
+          if (r?.ok) {
+            showPopup("MLC path saved to settings.xml", "success");
+            await refreshMlcRow();
+          } else {
+            showPopup(r?.error || "Failed to save MLC path", "error");
+          }
+        } catch (e: any) {
+          showPopup(String(e?.message || e), "error");
+        }
+      });
+
+      const mlcGroup = document.createElement("div");
+      mlcGroup.className = "hstack";
+      mlcGroup.appendChild(mlcInput);
+      mlcGroup.appendChild(mlcBrowse);
+      mlcGroup.appendChild(mlcSave);
+      mlcCtrl.appendChild(mlcGroup);
+      mlcCtrl.appendChild(mlcHint);
+      mlcWrap.appendChild(mlcLabel);
+      mlcWrap.appendChild(mlcCtrl);
+      sysList.appendChild(mlcWrap);
+
+      // Kick off initial load
+      refreshMlcRow();
+    }
   }
+
 
   secEmu.appendChild(modeWrap);
   secEmu.appendChild(fullscreenWrap);

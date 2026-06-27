@@ -1,4 +1,4 @@
-use crate::homemenu::{resolve_3ds_home, resolve_wiiu_home, resolve_wiiu_mlc};
+use crate::homemenu::{find_cemu_settings_path, resolve_3ds_home, resolve_wiiu_home, resolve_wiiu_mlc, write_wiiu_mlc};
 use crate::settings::{emulator_path, read_settings};
 use crate::state::AppState;
 use crate::systems::systems;
@@ -74,4 +74,31 @@ pub fn get_wiiu_mlc_path() -> String {
     let settings = read_settings();
     let emu_dir = emulator_path(&settings, "Nintendo Wii U").unwrap_or_default();
     resolve_wiiu_mlc(&emu_dir).unwrap_or_default()
+}
+
+/// Return the mlc_path currently stored in settings.xml together with the
+/// path of the settings.xml file itself so the frontend can display it.
+#[tauri::command]
+pub fn get_wiiu_mlc_info() -> serde_json::Value {
+    let settings = read_settings();
+    let emu_dir = emulator_path(&settings, "Nintendo Wii U").unwrap_or_default();
+    let xml_path = find_cemu_settings_path(&emu_dir)
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_default();
+    let mlc = resolve_wiiu_mlc(&emu_dir).unwrap_or_default();
+    serde_json::json!({ "xmlPath": xml_path, "mlcPath": mlc })
+}
+
+/// Write a new mlc_path value into Cemu's settings.xml.
+#[tauri::command]
+pub fn set_wiiu_mlc_path(mlc_path: String) -> serde_json::Value {
+    let settings = read_settings();
+    let emu_dir = emulator_path(&settings, "Nintendo Wii U").unwrap_or_default();
+    match find_cemu_settings_path(&emu_dir) {
+        None => serde_json::json!({ "ok": false, "error": "Cemu settings.xml not found" }),
+        Some(xml_path) => match write_wiiu_mlc(&xml_path, &mlc_path) {
+            Ok(()) => serde_json::json!({ "ok": true }),
+            Err(e) => serde_json::json!({ "ok": false, "error": e }),
+        },
+    }
 }

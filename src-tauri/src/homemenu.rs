@@ -116,6 +116,11 @@ fn cemu_settings_paths(emu_dir: &str) -> Vec<PathBuf> {
     out
 }
 
+/// Return the first Cemu settings.xml path that actually exists on disk.
+pub fn find_cemu_settings_path(emu_dir: &str) -> Option<PathBuf> {
+    cemu_settings_paths(emu_dir).into_iter().find(|p| p.is_file())
+}
+
 pub fn resolve_wiiu_mlc(emu_dir: &str) -> Option<String> {
     for p in cemu_settings_paths(emu_dir) {
         if p.is_file() {
@@ -130,6 +135,29 @@ pub fn resolve_wiiu_mlc(emu_dir: &str) -> Option<String> {
         }
     }
     None
+}
+
+/// Write (or insert) the <mlc_path> tag in the given settings.xml file.
+pub fn write_wiiu_mlc(settings_path: &Path, new_mlc: &str) -> Result<(), String> {
+    let xml = std::fs::read_to_string(settings_path).map_err(|e| e.to_string())?;
+    let open = "<mlc_path>";
+    let close = "</mlc_path>";
+    let new_xml = if let (Some(start), Some(rel_end)) = (xml.find(open), xml.find(close)) {
+        let end = rel_end + close.len();
+        let _ = start; // already captured
+        format!("{}{}{}{}", &xml[..start + open.len()], new_mlc, close, &xml[end..])
+    } else {
+        // Tag not present – insert before </content>
+        let anchor = "</content>";
+        match xml.find(anchor) {
+            Some(pos) => format!(
+                "{}\n\t<mlc_path>{}</mlc_path>\n{}",
+                &xml[..pos], new_mlc, &xml[pos..]
+            ),
+            None => return Err("settings.xml: <mlc_path> tag not found and <content> anchor missing".into()),
+        }
+    };
+    std::fs::write(settings_path, new_xml).map_err(|e| e.to_string())
 }
 
 pub fn resolve_wiiu_home(emu_dir: &str, rel: &Value) -> Option<String> {

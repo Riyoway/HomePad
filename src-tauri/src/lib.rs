@@ -82,6 +82,8 @@ pub fn run() {
             validate::validate_3ds_nand,
             validate::validate_wiiu_home,
             validate::get_wiiu_mlc_path,
+            validate::get_wiiu_mlc_info,
+            validate::set_wiiu_mlc_path,
             dialogs::open_dir,
             dialogs::open_file,
             downloader::download_system,
