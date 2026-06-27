@@ -78,10 +78,19 @@ pub fn get_wiiu_mlc_path() -> String {
 
 /// Return the mlc_path currently stored in settings.xml together with the
 /// path of the settings.xml file itself so the frontend can display it.
+///
+/// `emu_dir` lets the caller pass the emulator folder currently entered in
+/// the UI (before it is saved); when omitted or empty, the saved Wii U
+/// emulator path is used instead.
 #[tauri::command]
-pub fn get_wiiu_mlc_info() -> serde_json::Value {
-    let settings = read_settings();
-    let emu_dir = emulator_path(&settings, "Nintendo Wii U").unwrap_or_default();
+pub fn get_wiiu_mlc_info(emu_dir: Option<String>) -> serde_json::Value {
+    let emu_dir = match emu_dir {
+        Some(d) if !d.trim().is_empty() => d,
+        _ => {
+            let settings = read_settings();
+            emulator_path(&settings, "Nintendo Wii U").unwrap_or_default()
+        }
+    };
     let xml_path = find_cemu_settings_path(&emu_dir)
         .map(|p| p.to_string_lossy().to_string())
         .unwrap_or_default();

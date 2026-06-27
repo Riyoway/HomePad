@@ -44,7 +44,8 @@ export const api = {
   validate3dsNand: (nandDir: string) => invoke<OpResult>("validate_3ds_nand", { nandDir }),
   validateWiiUHome: (emuDir: string) => invoke<OpResult>("validate_wiiu_home", { emuDir }),
   getWiiUMlcPath: () => invoke<string>("get_wiiu_mlc_path"),
-  getWiiUMlcInfo: () => invoke<{ xmlPath: string; mlcPath: string }>("get_wiiu_mlc_info"),
+  getWiiUMlcInfo: (emuDir?: string) =>
+    invoke<{ xmlPath: string; mlcPath: string }>("get_wiiu_mlc_info", { emuDir: emuDir ?? null }),
   setWiiUMlcPath: (mlcPath: string) => invoke<OpResult>("set_wiiu_mlc_path", { mlcPath }),
 
   downloadSystem: (system: string, key?: string) =>

@@ -408,6 +408,24 @@ export async function showSettings(): Promise<void> {
       input.addEventListener("change", reload);
       input.addEventListener("blur", reload);
     }
+    if (name === "Nintendo Wii U") {
+      // Typing/pasting a new emulator path (not just browsing) should also
+      // re-read the MLC path from that folder's settings.xml.
+      const reloadWiiU = async () => {
+        const val = input.value.trim();
+        if (val) {
+          try {
+            const v = await api.validateWiiUHome(val);
+            setError(errBox, v?.ok ? "" : v?.error || "Wii U Home Menu not found");
+          } catch {}
+        } else {
+          setError(errBox, "");
+        }
+        refreshMlcRow();
+      };
+      input.addEventListener("change", reloadWiiU);
+      input.addEventListener("blur", reloadWiiU);
+    }
     wrap.appendChild(label);
     wrap.appendChild(ctrl);
     sysList.appendChild(wrap);
@@ -451,7 +469,7 @@ export async function showSettings(): Promise<void> {
       // Assign the real implementation now that mlcInput and mlcHint exist
       refreshMlcRow = async () => {
         try {
-          const info = await api.getWiiUMlcInfo();
+          const info = await api.getWiiUMlcInfo(input.value.trim() || undefined);
           mlcInput.value = info?.mlcPath || "";
           mlcInput.placeholder = info?.mlcPath ? "" : "MLC path not found";
           mlcHint.textContent = info?.xmlPath ? `settings.xml: ${info.xmlPath}` : "settings.xml: not found";
