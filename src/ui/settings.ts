@@ -352,6 +352,10 @@ export async function showSettings(): Promise<void> {
   const paths = current?.emulator?.paths || {};
   const sysList = document.createElement("div");
   sysList.className = "sys-list";
+  // Hoisted so the Wii U emulator-folder handlers and the dedicated Cemu MLC
+  // card (built further down) can share one refresh routine.
+  let refreshMlcRow: () => void = () => {};
+  let wiiuEmuInput: HTMLInputElement | null = null;
   for (const name of systemNames) {
     const wrap = document.createElement("div");
     wrap.className = "row";
@@ -363,15 +367,13 @@ export async function showSettings(): Promise<void> {
     const input = textInput(`Folder for ${name}`);
     input.value = paths[name] || "";
     input.dataset.system = name;
+    if (name === "Nintendo Wii U") wiiuEmuInput = input;
     const browse = document.createElement("button");
     browse.type = "button";
     browse.className = "btn icon-only";
     browse.title = "Browse";
     browse.setAttribute("aria-label", `Browse ${name}`);
     browse.innerHTML = FOLDER_SVG;
-    // Wii U: we need refreshMlcRow available in the browse handler;
-    // declare it here as a let so it can be referenced before definition.
-    let refreshMlcRow: (() => void) = () => {};
     browse.addEventListener("click", async () => {
       const res = await api.openDir({
         title: `Select ${name} folder`,
@@ -429,110 +431,11 @@ export async function showSettings(): Promise<void> {
     wrap.appendChild(label);
     wrap.appendChild(ctrl);
     sysList.appendChild(wrap);
-
-    // Wii U: show the mlc_path from settings.xml so the user can inspect and edit it
-    if (name === "Nintendo Wii U") {
-      const mlcWrap = document.createElement("div");
-      mlcWrap.className = "row";
-      mlcWrap.id = "wiiu-mlc-row";
-
-      const mlcLabel = document.createElement("div");
-      mlcLabel.className = "label";
-      mlcLabel.textContent = "MLC Path (settings.xml)";
-
-      const mlcCtrl = document.createElement("div");
-      mlcCtrl.className = "control";
-
-      const mlcInput = textInput("MLC path not found");
-      mlcInput.id = "wiiu-mlc-input";
-
-      const mlcBrowse = document.createElement("button");
-      mlcBrowse.type = "button";
-      mlcBrowse.className = "btn icon-only";
-      mlcBrowse.title = "Browse MLC folder";
-      mlcBrowse.setAttribute("aria-label", "Browse Wii U MLC folder");
-      mlcBrowse.innerHTML = FOLDER_SVG;
-
-      const mlcSave = document.createElement("button");
-      mlcSave.type = "button";
-      mlcSave.className = "btn icon-only";
-      mlcSave.title = "Save MLC path to settings.xml";
-      mlcSave.setAttribute("aria-label", "Save MLC path to settings.xml");
-      mlcSave.innerHTML =
-        '<svg viewBox="0 0 24 24" class="icon"><path d="M5 13l4 4L19 7" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-
-      // Read-only hint showing which XML file is being used
-      const mlcHint = document.createElement("div");
-      mlcHint.id = "wiiu-mlc-hint";
-      mlcHint.style.cssText = "font-size:11px;color:var(--fg-muted);margin-top:2px;word-break:break-all;";
-
-      // Assign the real implementation now that mlcInput and mlcHint exist
-      refreshMlcRow = async () => {
-        try {
-          const info = await api.getWiiUMlcInfo(input.value.trim() || undefined);
-          mlcInput.value = info?.mlcPath || "";
-          mlcInput.placeholder = info?.mlcPath ? "" : "MLC path not found";
-          mlcHint.textContent = info?.xmlPath ? `settings.xml: ${info.xmlPath}` : "settings.xml: not found";
-          mlcSave.style.display = info?.xmlPath ? "" : "none";
-        } catch {
-          mlcHint.textContent = "Failed to read mlc info";
-          mlcSave.style.display = "none";
-        }
-      };
-
-      mlcBrowse.addEventListener("click", async () => {
-        const res = await api.openDir({
-          title: "Select Wii U MLC folder",
-          defaultPath: mlcInput.value || undefined,
-        });
-        if (res?.ok && res.path) {
-          mlcInput.value = res.path;
-        }
-      });
-
-      mlcSave.addEventListener("click", async () => {
-        const val = mlcInput.value.trim();
-        if (!val) return;
-        try {
-          const r = await api.setWiiUMlcPath(val);
-          if (r?.ok) {
-            showPopup("MLC path saved to settings.xml", "success");
-            await refreshMlcRow();
-          } else {
-            showPopup(r?.error || "Failed to save MLC path", "error");
-          }
-        } catch (e: any) {
-          showPopup(String(e?.message || e), "error");
-        }
-      });
-
-      const mlcGroup = document.createElement("div");
-      mlcGroup.className = "hstack";
-      mlcGroup.appendChild(mlcInput);
-      mlcGroup.appendChild(mlcBrowse);
-      mlcGroup.appendChild(mlcSave);
-      mlcCtrl.appendChild(mlcGroup);
-      mlcCtrl.appendChild(mlcHint);
-      mlcWrap.appendChild(mlcLabel);
-      mlcWrap.appendChild(mlcCtrl);
-      sysList.appendChild(mlcWrap);
-
-      // Kick off initial load
-      refreshMlcRow();
-    }
   }
 
 
   secEmu.appendChild(modeWrap);
   secEmu.appendChild(fullscreenWrap);
-  const updateNandVisibility = () => {
-    const checked = modeWrap.querySelector<HTMLInputElement>('input[name="emu-mode"]:checked');
-    const isHome = checked?.value === "home";
-    nandRow.style.display = isHome ? "" : "none";
-  };
-  updateNandVisibility();
-  modeWrap.addEventListener("change", updateNandVisibility);
-  secEmu.appendChild(nandRow);
   const perTitle = document.createElement("div");
   perTitle.className = "subsection-title";
   perTitle.textContent = "Per‑System Emulator Folders";
@@ -650,6 +553,113 @@ export async function showSettings(): Promise<void> {
   melCard.appendChild(melDsCol);
   melCard.appendChild(melDsiCol);
   secEmu.appendChild(melCard);
+
+  // Nintendo 3DS — dedicated card for the Home Menu NAND folder.
+  const threeDsTitle = document.createElement("div");
+  threeDsTitle.className = "subsection-title";
+  threeDsTitle.textContent = "Nintendo 3DS NAND";
+  const threeDsCard = document.createElement("div");
+  threeDsCard.className = "settings-card";
+  const threeDsNote = document.createElement("div");
+  threeDsNote.className = "section-subtitle";
+  threeDsNote.textContent = "Required to boot the 3DS Home Menu.";
+  threeDsCard.appendChild(threeDsNote);
+  threeDsCard.appendChild(nandRow);
+  secEmu.appendChild(threeDsTitle);
+  secEmu.appendChild(threeDsCard);
+
+  // Nintendo Wii U — dedicated card for Cemu's mlc_path (settings.xml).
+  const cemuTitle = document.createElement("div");
+  cemuTitle.className = "subsection-title";
+  cemuTitle.textContent = "Cemu (Wii U) MLC";
+  const cemuCard = document.createElement("div");
+  cemuCard.className = "settings-card";
+  const cemuNote = document.createElement("div");
+  cemuNote.className = "section-subtitle";
+  cemuNote.textContent = "Cemu's mlc_path, read from and saved to settings.xml.";
+
+  const mlcWrap = document.createElement("div");
+  mlcWrap.className = "row";
+  mlcWrap.id = "wiiu-mlc-row";
+  const mlcLabel = document.createElement("div");
+  mlcLabel.className = "label";
+  mlcLabel.textContent = "MLC Path";
+  const mlcCtrl = document.createElement("div");
+  mlcCtrl.className = "control";
+  const mlcInput = textInput("MLC path not found");
+  mlcInput.id = "wiiu-mlc-input";
+  const mlcBrowse = document.createElement("button");
+  mlcBrowse.type = "button";
+  mlcBrowse.className = "btn icon-only";
+  mlcBrowse.title = "Browse MLC folder";
+  mlcBrowse.setAttribute("aria-label", "Browse Wii U MLC folder");
+  mlcBrowse.innerHTML = FOLDER_SVG;
+  const mlcSave = document.createElement("button");
+  mlcSave.type = "button";
+  mlcSave.className = "btn icon-only";
+  mlcSave.title = "Save MLC path to settings.xml";
+  mlcSave.setAttribute("aria-label", "Save MLC path to settings.xml");
+  mlcSave.innerHTML =
+    '<svg viewBox="0 0 24 24" class="icon"><path d="M5 13l4 4L19 7" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const mlcHint = document.createElement("div");
+  mlcHint.id = "wiiu-mlc-hint";
+  mlcHint.style.cssText = "font-size:11px;color:var(--fg-muted);margin-top:6px;word-break:break-all;";
+
+  // Read the mlc_path from the Wii U emulator folder currently entered in the
+  // UI (falls back to the saved path when the field is empty).
+  refreshMlcRow = async () => {
+    try {
+      const info = await api.getWiiUMlcInfo(wiiuEmuInput?.value.trim() || undefined);
+      mlcInput.value = info?.mlcPath || "";
+      mlcInput.placeholder = info?.mlcPath ? "" : "MLC path not found";
+      mlcHint.textContent = info?.xmlPath ? `settings.xml: ${info.xmlPath}` : "settings.xml: not found";
+      mlcSave.style.display = info?.xmlPath ? "" : "none";
+    } catch {
+      mlcHint.textContent = "Failed to read mlc info";
+      mlcSave.style.display = "none";
+    }
+  };
+
+  mlcBrowse.addEventListener("click", async () => {
+    const res = await api.openDir({
+      title: "Select Wii U MLC folder",
+      defaultPath: mlcInput.value || undefined,
+    });
+    if (res?.ok && res.path) {
+      mlcInput.value = res.path;
+    }
+  });
+
+  mlcSave.addEventListener("click", async () => {
+    const val = mlcInput.value.trim();
+    if (!val) return;
+    try {
+      const r = await api.setWiiUMlcPath(val);
+      if (r?.ok) {
+        showPopup("MLC path saved to settings.xml", "success");
+        await refreshMlcRow();
+      } else {
+        showPopup(r?.error || "Failed to save MLC path", "error");
+      }
+    } catch (e: any) {
+      showPopup(String(e?.message || e), "error");
+    }
+  });
+
+  const mlcGroup = document.createElement("div");
+  mlcGroup.className = "hstack";
+  mlcGroup.appendChild(mlcInput);
+  mlcGroup.appendChild(mlcBrowse);
+  mlcGroup.appendChild(mlcSave);
+  mlcCtrl.appendChild(mlcGroup);
+  mlcCtrl.appendChild(mlcHint);
+  mlcWrap.appendChild(mlcLabel);
+  mlcWrap.appendChild(mlcCtrl);
+  cemuCard.appendChild(cemuNote);
+  cemuCard.appendChild(mlcWrap);
+  secEmu.appendChild(cemuTitle);
+  secEmu.appendChild(cemuCard);
+  refreshMlcRow();
 
   function getSysDir(name: string): string {
     const el = sysList.querySelector<HTMLInputElement>(`input.text[data-system="${name}"]`);
