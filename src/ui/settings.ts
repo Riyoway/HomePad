@@ -3,6 +3,7 @@ import { showPopup } from "./toast";
 import { playClick, playError, playComplete } from "./sounds";
 import { makeDropdown } from "./dom";
 import type { Settings, EmulatorSettings } from "../types";
+import { ICON_VARIANTS } from "./icons";
 
 let current: Settings = {};
 let systemNames: string[] = [];
@@ -817,6 +818,63 @@ export async function showSettings(): Promise<void> {
   themeSel.value = current?.display?.theme || "dark";
   secDisp.appendChild(row("Theme", themeSel));
 
+  const iconColorSel = makeDropdown("Select icon style…");
+  iconColorSel.setOptions([
+    { value: "white", label: "White" },
+    { value: "black", label: "Black" },
+    { value: "custom", label: "Custom" },
+  ]);
+  iconColorSel.value = current?.display?.iconColor || "white";
+  secDisp.appendChild(row("Icon style", iconColorSel));
+
+  const customIconsContainer = document.createElement("div");
+  customIconsContainer.className = "sys-list";
+  customIconsContainer.style.marginTop = "12px";
+
+  const customSubTitle = document.createElement("div");
+  customSubTitle.className = "subsection-title";
+  customSubTitle.textContent = "Custom Icon Colors";
+  customSubTitle.style.borderTop = "none";
+  customSubTitle.style.paddingTop = "0";
+  customSubTitle.style.marginTop = "0";
+  customIconsContainer.appendChild(customSubTitle);
+
+  const customDropdowns: Record<string, ReturnType<typeof makeDropdown>> = {};
+  const variantSystems = systemNames.filter((name) => ICON_VARIANTS[name]);
+
+  for (const name of variantSystems) {
+    const sysRow = document.createElement("div");
+    sysRow.className = "row";
+
+    const sysLabel = document.createElement("div");
+    sysLabel.className = "label";
+    sysLabel.textContent = `${name} Icon`;
+
+    const sysCtrl = document.createElement("div");
+    sysCtrl.className = "control";
+
+    const sysSel = makeDropdown("Select color…");
+    sysSel.setOptions([
+      { value: "white", label: "White" },
+      { value: "black", label: "Black" },
+    ]);
+    sysSel.value = current?.display?.iconCustomColor?.[name] || "white";
+    customDropdowns[name] = sysSel;
+
+    sysCtrl.appendChild(sysSel);
+    sysRow.appendChild(sysLabel);
+    sysRow.appendChild(sysCtrl);
+    customIconsContainer.appendChild(sysRow);
+  }
+
+  secDisp.appendChild(customIconsContainer);
+
+  const updateCustomVisibility = () => {
+    customIconsContainer.style.display = iconColorSel.value === "custom" ? "block" : "none";
+  };
+  updateCustomVisibility();
+  iconColorSel.addEventListener("change", updateCustomVisibility);
+
   const errBox = errorBox();
   if (nandDir.value) {
     try {
@@ -929,6 +987,14 @@ export async function showSettings(): Promise<void> {
       };
       current.display = {
         theme: themeSel.value as any,
+        iconColor: iconColorSel.value as any,
+        iconCustomColor: Object.keys(customDropdowns).reduce(
+          (acc, name) => {
+            acc[name] = customDropdowns[name].value as "white" | "black";
+            return acc;
+          },
+          {} as Record<string, "white" | "black">
+        ),
       };
       current.downloader = { dir: dlDirInput.value.trim() };
 

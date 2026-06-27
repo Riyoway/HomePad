@@ -1,5 +1,6 @@
 import { api } from "../api";
 import type { SystemConfig } from "../types";
+import { getIconPath } from "./icons";
 
 function escapeHtml(s: string): string {
   return String(s)
@@ -51,8 +52,9 @@ export async function renderAppsFromConfig(): Promise<void> {
       )
       .filter((p): p is string => Boolean(p));
 
-    const imgPath = iconPaths[0] ?? null;
+    let imgPath = iconPaths[0] ?? null;
     if (imgPath) {
+      imgPath = getIconPath(name, imgPath, settings);
       const loader = document.createElement("div");
       loader.className = "img-loader";
       icon.appendChild(loader);

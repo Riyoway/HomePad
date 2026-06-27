@@ -17,6 +17,8 @@ export interface EmulatorSettings {
 
 export interface DisplaySettings {
   theme?: Theme;
+  iconColor?: "white" | "black" | "custom";
+  iconCustomColor?: Record<string, "white" | "black">;
 }
 
 export interface Settings {
