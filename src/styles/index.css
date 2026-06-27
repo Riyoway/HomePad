@@ -121,6 +121,23 @@ body {
 .tile-img { width: 100%; height: auto; display: block; }
 .app-name { font-size: 14px; color: var(--fg); opacity: 0.95; }
 
+/* Soft shadow cast behind each console icon (follows the artwork's shape). */
+.app-icon .tile-img,
+.app-icon .tile-icon {
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.5));
+  transition: filter 180ms ease;
+}
+.app-card:hover .app-icon .tile-img,
+.app-card:focus-visible .app-icon .tile-img,
+.app-card:hover .app-icon .tile-icon,
+.app-card:focus-visible .app-icon .tile-icon {
+  filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.6));
+}
+body.console-mode .app-icon .tile-img,
+body.console-mode .app-icon .tile-icon {
+  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.55));
+}
+
 .app-icon { position: relative; }
 .tile-img.is-loading { opacity: 0; }
 .img-loader {
@@ -802,9 +819,9 @@ body {
 }
 
 .settings-modal {
-  width: min(800px, 94vw);
-  height: min(86vh, 470px);
-  max-height: min(86vh, 470px);
+  width: min(1100px, 94vw);
+  height: min(88vh, 720px);
+  max-height: min(88vh, 720px);
 }
 .settings-modal .modal-header { font-size: 16px; letter-spacing: .2px; }
 
@@ -868,11 +885,42 @@ body {
 }
 .settings-modal .mel-grid .mel-col { min-width: 0; }
 .settings-modal .mel-grid .row { grid-template-columns: 78px 1fr; gap: 8px; margin: 8px 0; }
+/* Divider between the DS and DSi columns. */
+.settings-modal .mel-grid .mel-col + .mel-col {
+  border-left: 1px solid var(--glass-border);
+  padding-left: 22px;
+}
+
+/* Subtle row highlight so folder rows are easier to scan/aim at. */
+.settings-modal .sys-list .row {
+  border-radius: 8px;
+  transition: background 140ms ease;
+}
+.settings-modal .sys-list .row:hover { background: var(--glass-border); }
+
+/* Collapse the two-column blocks when the window/modal is narrow. */
+@media (max-width: 760px) {
+  .settings-modal .mel-grid {
+    grid-template-columns: 1fr;
+    gap: 4px 0;
+  }
+  .settings-modal .mel-grid .mel-col + .mel-col {
+    border-left: 0;
+    padding-left: 0;
+    padding-top: 10px;
+    margin-top: 4px;
+    border-top: 1px solid var(--glass-border);
+  }
+}
 
 .settings-modal .modal-footer { padding: 12px 18px; gap: 10px; }
 
-.switch-modal { width: min(860px, 94vw); max-height: min(88vh, 500px); }
-.settings-modal.switch-modal { height: min(86vh, 478px); max-height: min(86vh, 478px); }
+.switch-modal { width: min(960px, 94vw); max-height: min(90vh, 740px); }
+.settings-modal.switch-modal {
+  width: min(1100px, 94vw);
+  height: min(90vh, 720px);
+  max-height: min(90vh, 720px);
+}
 .switch-modal .modal-header {
   font-size: 17px; font-weight: 700; letter-spacing: .2px;
   padding: 16px 20px;
