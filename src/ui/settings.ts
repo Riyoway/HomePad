@@ -1317,7 +1317,7 @@ export async function showSettings(): Promise<void> {
     },
     actions: [
       {
-        label: "Install Keys…",
+        label: "Install Keys",
         run: async (dir) => {
           const res = await api.openFile({
             title: "Select prod.keys",
@@ -1331,7 +1331,7 @@ export async function showSettings(): Promise<void> {
         },
       },
       {
-        label: "Install Firmware…",
+        label: "Install Firmware",
         run: async (dir) => {
           const res = await api.openDir({ title: "Select firmware folder (contains .nca files)" });
           if (!res?.ok || !res.path) return;
@@ -1346,7 +1346,7 @@ export async function showSettings(): Promise<void> {
 
   const threeDsInstaller = buildInstallerCard({
     title: "Nintendo 3DS",
-    note: "Install 3DS system files (boot9.bin, aes_keys.txt, seeddb.bin, shared_font.bin) into your emulator's sysdata folder (Borked3DS, Azahar, Citra).",
+    note: "Install 3DS system files (aes_keys.txt, seeddb.bin, shared_font.bin) into your emulator's sysdata folder (Borked3DS, Azahar, Citra).",
     ariaLabel: "3DS data folder",
     initialDir: current?.emulator?.threeDsDataDir || "",
     suggest: () => api.suggest3dsDataDir(),
@@ -1354,18 +1354,17 @@ export async function showSettings(): Promise<void> {
       const st = await api.threeDsInstallStatus(dir || undefined);
       container.replaceChildren();
       if (!st?.valid) return;
-      container.appendChild(statusChip(!!st.boot9, st.boot9 ? "boot9.bin" : "boot9.bin missing"));
       container.appendChild(statusChip(!!st.aesKeys, st.aesKeys ? "aes_keys.txt" : "aes_keys.txt missing"));
       if (st.seeddb) container.appendChild(neutralChip("seeddb.bin"));
       if (st.sharedFont) container.appendChild(neutralChip("shared_font.bin"));
     },
     actions: [
       {
-        label: "Install Keys…",
+        label: "Install Keys",
         run: async (dir) => {
           const res = await api.openFile({
-            title: "Select boot9.bin / aes_keys.txt",
-            filters: [{ name: "3DS system files", extensions: ["bin", "txt"] }],
+            title: "Select aes_keys.txt",
+            filters: [{ name: "3DS system files", extensions: ["txt", "bin"] }],
           });
           if (!res?.ok || !res.path) return;
           const r = await api.install3dsKeys(dir, res.path);

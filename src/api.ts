@@ -73,7 +73,6 @@ export const api = {
       dataDir: string;
       valid: boolean;
       sysdataDir?: string;
-      boot9?: boolean;
       aesKeys?: boolean;
       seeddb?: boolean;
       sharedFont?: boolean;

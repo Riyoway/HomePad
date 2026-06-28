@@ -9,11 +9,11 @@ use tauri::State;
 // %APPDATA% folder names used by 3DS (Citra-family) emulators.
 const THREEDS_APPDATA_DIRS: &[&str] = &["Borked3DS", "Azahar", "Citra"];
 
-// System files Borked3DS/Citra loads from `<data>/sysdata`.
+// System files Borked3DS/Citra loads from `<data>/sysdata`. boot9.bin is
+// intentionally omitted: aes_keys.txt already carries the needed keys, so a
+// boot9 dump is usually unnecessary.
 const SYSDATA_FILES: &[&str] = &[
     "aes_keys.txt",
-    "boot9.bin",
-    "boot9_prot.bin",
     "sector0x96.bin",
     "secret_sector.bin",
     "seeddb.bin",
@@ -98,7 +98,6 @@ pub fn three_ds_install_status(data_dir: Option<String>) -> Value {
         "dataDir": data,
         "valid": true,
         "sysdataDir": sd.to_string_lossy(),
-        "boot9": sd.join("boot9.bin").is_file() || sd.join("boot9_prot.bin").is_file(),
         "aesKeys": sd.join("aes_keys.txt").is_file(),
         "seeddb": sd.join("seeddb.bin").is_file(),
         "sharedFont": sd.join("shared_font.bin").is_file(),
