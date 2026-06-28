@@ -208,6 +208,34 @@ function fieldLabel(text: string): HTMLDivElement {
   return d;
 }
 
+// Console artwork for a system, picking the variant that reads on the current
+// theme (white on dark, black on light).
+function consoleIconSrc(name: string): string {
+  const theme = current?.display?.theme || "dark";
+  const v = ICON_VARIANTS[name];
+  if (v) return theme === "light" ? v.black : v.white;
+  if (name === "Nintendo Switch") return "/assets/Switch.png";
+  return "";
+}
+
+// A row label prefixed with the console's icon.
+function consoleLabel(name: string, text = name): HTMLDivElement {
+  const label = document.createElement("div");
+  label.className = "label sys-label";
+  const src = consoleIconSrc(name);
+  if (src) {
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = "";
+    img.className = "sys-ico";
+    label.appendChild(img);
+  }
+  const t = document.createElement("span");
+  t.textContent = text;
+  label.appendChild(t);
+  return label;
+}
+
 interface HomeStatus {
   found: boolean;
   regionLabel?: string;
@@ -619,9 +647,7 @@ export async function showSettings(): Promise<void> {
   for (const name of systemNames) {
     const wrap = document.createElement("div");
     wrap.className = "row";
-    const label = document.createElement("div");
-    label.className = "label";
-    label.textContent = name;
+    const label = consoleLabel(name);
     const ctrl = document.createElement("div");
     ctrl.className = "control";
     const input = textInput(`Folder for ${name}`);
@@ -1082,9 +1108,7 @@ export async function showSettings(): Promise<void> {
         : [];
       const rowEl = document.createElement("div");
       rowEl.className = "row";
-      const l = document.createElement("div");
-      l.className = "label";
-      l.textContent = sysName;
+      const l = consoleLabel(sysName);
       const c = document.createElement("div");
       c.className = "control";
       if (entries.length) {
@@ -1268,9 +1292,7 @@ export async function showSettings(): Promise<void> {
     const sysRow = document.createElement("div");
     sysRow.className = "row";
 
-    const sysLabel = document.createElement("div");
-    sysLabel.className = "label";
-    sysLabel.textContent = `${name} Icon`;
+    const sysLabel = consoleLabel(name);
 
     const sysCtrl = document.createElement("div");
     sysCtrl.className = "control";

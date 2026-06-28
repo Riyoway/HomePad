@@ -872,9 +872,17 @@ body.console-mode .app-icon .tile-icon {
 }
 .settings-modal .section-subtitle { font-size: 12px; font-weight: 650; color: var(--fg); opacity: .85; margin: 2px 0 8px; }
 
-.settings-modal .row { grid-template-columns: 200px 1fr; gap: 12px; margin: 9px 0; align-items: center; }
+.settings-modal .row { grid-template-columns: 210px 1fr; gap: 14px; margin: 9px 0; align-items: center; }
 .settings-modal .row.full { grid-template-columns: 1fr; }
 .settings-modal .row .label { font-size: 13px; }
+
+/* Console-icon row labels (per-system folders, supported emulators, etc.). */
+.settings-modal .sys-label { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+.settings-modal .sys-label .sys-ico {
+  width: 24px; height: 24px; object-fit: contain; flex: 0 0 auto;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+.settings-modal .sys-label > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .settings-modal .text,
 .settings-modal .dropdown-toggle.select { height: 40px; padding-top: 0; padding-bottom: 0; }
