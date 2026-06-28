@@ -898,6 +898,70 @@ body.console-mode .app-icon .tile-icon {
 .settings-modal .btn.icon-only { width: 40px !important; height: 40px !important; }
 .settings-modal .hstack { gap: 8px; align-items: center; }
 
+/* Inline path field: the input and its browse/find/save icons share one
+   bordered box, with flat (non-circular) icon buttons sitting inside it. */
+.settings-modal .hstack:has(> .text) {
+  gap: 0;
+  height: 40px;
+  background: var(--input-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+.settings-modal .hstack:has(> .text):hover { border-color: var(--glass-border-strong); }
+.settings-modal .hstack:has(> .text):focus-within {
+  border-color: transparent;
+  box-shadow: 0 0 0 3px rgba(63, 193, 255, 0.85);
+}
+.settings-modal .hstack:has(> .text.invalid) {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 1px var(--danger) inset;
+}
+.settings-modal .hstack:has(> .text) > .text {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  height: 100% !important;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.settings-modal .hstack:has(> .text) > .btn.icon-only {
+  width: 36px !important;
+  height: 100% !important;
+  min-width: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--fg-muted);
+  flex: 0 0 auto;
+  box-shadow: none !important;
+}
+.settings-modal .hstack:has(> .text) > .btn.icon-only:hover,
+.settings-modal .hstack:has(> .text) > .btn.icon-only:focus-visible {
+  background: var(--glass-border) !important;
+  color: var(--fg);
+  transform: none !important;
+  box-shadow: none !important;
+}
+.settings-modal .hstack:has(> .text) > .btn.icon-only .icon { width: 18px; height: 18px; }
+
+/* Compact "Reconnect" button next to the Enable Discord RPC toggle. */
+.settings-modal .retry-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-left: 10px;
+  padding: 4px 10px; border-radius: 8px;
+  appearance: none; -webkit-appearance: none;
+  background: var(--btn-bg); border: 1px solid var(--glass-border-strong);
+  color: var(--fg-muted); font-family: inherit; font-size: 12px; font-weight: 600; line-height: 1.4;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+.settings-modal .retry-btn:hover { background: var(--btn-bg-hover); color: var(--fg); border-color: var(--glass-border-strong); }
+.settings-modal .retry-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(63, 193, 255, 0.5); }
+.settings-modal .retry-btn:disabled { opacity: 0.5; cursor: default; }
+.settings-modal .retry-btn svg { width: 14px; height: 14px; flex: 0 0 auto; }
+
 .settings-modal .sys-list,
 .settings-modal .settings-card {
   background: var(--chip-bg);
