@@ -46,7 +46,7 @@ emulators for the DS, DSi, 3DS, Wii, Wii U, and Switch — all from one place.
 - **Live status bar** — battery, Wi‑Fi, volume, and clock.
 
 ### 🎨 Polish & extras
-- **Themes** — dark, light, and black, with optional **per-console icon colors** (white / black).
+- **Themes** — dark or light, with selectable **icon colors** (white / black) including an optional **per-console** override.
 - **Discord Rich Presence** — shows the system you're browsing or playing, with a link to the latest release.
 - **System tray** support.
 - **Update checker** — the toolbar checks GitHub for the latest release and shows a clear "update available" dialog with release notes.
