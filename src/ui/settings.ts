@@ -560,7 +560,10 @@ export async function showSettings(): Promise<void> {
   const nandDir = textInput("3DS NAND folder (needed when Launch Home System)");
   bindPathInput(nandDir, "dir");
   nandDir.value = current?.emulator?.nandDir || "";
-  if (!nandDir.value) {
+  // Only auto-detect the NAND once the 3DS emulator folder is configured, so
+  // nothing is read in before the emulator itself is set.
+  const threeDsEmuSaved = (current?.emulator?.paths?.["Nintendo 3DS"] || "").trim();
+  if (!nandDir.value && threeDsEmuSaved) {
     try {
       const suggested = await api.suggest3dsNand();
       if (suggested) nandDir.value = suggested;
@@ -662,9 +665,19 @@ export async function showSettings(): Promise<void> {
     browse.setAttribute("aria-label", `Browse ${name}`);
     browse.innerHTML = FOLDER_SVG;
     browse.addEventListener("click", async () => {
+      let defaultPath: string | undefined = input.value.trim() || undefined;
+      if (!defaultPath) {
+        // No folder yet — start the picker at the default download folder,
+        // where emulators are installed.
+        try {
+          const dl = (dlDirInput.value || "").trim();
+          const expanded = dl ? await api.expandPath(dl) : "";
+          if (expanded && (await api.pathExists(expanded, "dir"))) defaultPath = expanded;
+        } catch {}
+      }
       const res = await api.openDir({
         title: `Select ${name} folder`,
-        defaultPath: input.value || undefined,
+        defaultPath,
       });
       if (res?.ok && res.path) {
         input.value = res.path;
@@ -714,6 +727,24 @@ export async function showSettings(): Promise<void> {
       };
       input.addEventListener("change", reloadWiiU);
       input.addEventListener("blur", reloadWiiU);
+    }
+    if (name === "Nintendo 3DS") {
+      // Setting the 3DS emulator folder is what triggers NAND auto-detect (if
+      // not already set) and the Home System status — only then.
+      const reload3ds = async () => {
+        if (input.value.trim() && !nandDir.value.trim()) {
+          try {
+            const s = await api.suggest3dsNand();
+            if (s) {
+              nandDir.value = s;
+              void checkPathInput(nandDir);
+            }
+          } catch {}
+        }
+        refreshThreeDsStatus();
+      };
+      input.addEventListener("change", reload3ds);
+      input.addEventListener("blur", reload3ds);
     }
     wrap.appendChild(label);
     wrap.appendChild(ctrl);
@@ -856,8 +887,12 @@ export async function showSettings(): Promise<void> {
   const threeDsStatus = document.createElement("div");
   threeDsStatus.className = "features";
   refreshThreeDsStatus = async () => {
+    if (!nandDir.value.trim()) {
+      threeDsStatus.replaceChildren();
+      return;
+    }
     try {
-      const hs = await api.threeDsHomeStatus(nandDir.value.trim() || undefined);
+      const hs = await api.threeDsHomeStatus(nandDir.value.trim());
       renderHomeStatus(threeDsStatus, hs);
     } catch {
       threeDsStatus.replaceChildren();
@@ -923,8 +958,21 @@ export async function showSettings(): Promise<void> {
   // Read the mlc_path from the Wii U emulator folder currently entered in the
   // UI (falls back to the saved path when the field is empty).
   refreshMlcRow = async () => {
+    const emuDir = wiiuEmuInput?.value.trim() || "";
+    if (!emuDir) {
+      // Wii U emulator folder not set — don't read settings.xml from %APPDATA%.
+      mlcInput.value = "";
+      mlcInput.placeholder = "Set the Wii U emulator folder first";
+      mlcInput.classList.remove("invalid");
+      mlcInput.removeAttribute("title");
+      mlcMetaPath.textContent = "";
+      mlcMeta.title = "";
+      mlcSave.style.display = "none";
+      homeStatus.replaceChildren();
+      return;
+    }
     try {
-      const info = await api.getWiiUMlcInfo(wiiuEmuInput?.value.trim() || undefined);
+      const info = await api.getWiiUMlcInfo(emuDir);
       mlcInput.value = info?.mlcPath || "";
       mlcInput.placeholder = info?.mlcPath ? "" : "MLC path not found";
       mlcMetaPath.textContent = info?.xmlPath || "not found";
@@ -936,7 +984,7 @@ export async function showSettings(): Promise<void> {
       mlcSave.style.display = "none";
     }
     try {
-      const hs = await api.wiiuHomeStatus(wiiuEmuInput?.value.trim() || undefined);
+      const hs = await api.wiiuHomeStatus(emuDir);
       renderHomeStatus(homeStatus, hs);
     } catch {
       homeStatus.replaceChildren();
