@@ -1430,7 +1430,7 @@ export async function showSettings(): Promise<void> {
 
   const threeDsInstaller = buildInstallerCard({
     title: "Nintendo 3DS",
-    note: "Install 3DS system files (aes_keys.txt, seeddb.bin, shared_font.bin) into your emulator's sysdata folder (Borked3DS, Azahar, Citra).",
+    note: "Install 3DS system files (aes_keys.txt, seeddb.bin, shared_font.bin) into your emulator's sysdata folder (Borked3DS, Azahar, Citra, Mandarine).",
     ariaLabel: "3DS data folder",
     initialDir: current?.emulator?.threeDsDataDir || "",
     suggest: () => api.suggest3dsDataDir(),

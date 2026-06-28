@@ -25,6 +25,7 @@ pub fn suggest_3ds_nand(state: State<AppState>) -> String {
         candidates.push(Path::new(ad).join("Borked3DS").join("nand"));
         candidates.push(Path::new(ad).join("Citra").join("nand"));
         candidates.push(Path::new(ad).join("Azahar").join("nand"));
+        candidates.push(Path::new(ad).join("Mandarine").join("nand"));
     }
     let found: Vec<String> = candidates
         .into_iter()

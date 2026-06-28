@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use tauri::State;
 
 // %APPDATA% folder names used by 3DS (Citra-family) emulators.
-const THREEDS_APPDATA_DIRS: &[&str] = &["Borked3DS", "Azahar", "Citra"];
+const THREEDS_APPDATA_DIRS: &[&str] = &["Borked3DS", "Azahar", "Citra", "Mandarine"];
 
 // System files Borked3DS/Citra loads from `<data>/sysdata`. boot9.bin is
 // intentionally omitted: aes_keys.txt already carries the needed keys, so a
