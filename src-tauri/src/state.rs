@@ -29,6 +29,7 @@ impl DownloadState {
 
 pub struct AppState {
     pub nand_cycle: Mutex<NandCycle>,
+    pub switch_cycle: Mutex<NandCycle>,
     pub download: Arc<DownloadState>,
     pub discord: Arc<Mutex<DiscordManager>>,
     pub launch_gen: Arc<AtomicU64>,

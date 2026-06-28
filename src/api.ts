@@ -51,6 +51,22 @@ export const api = {
       path?: string;
     }>("three_ds_home_status", { nandDir: nandDir ?? null }),
   validateWiiUHome: (emuDir: string) => invoke<OpResult>("validate_wiiu_home", { emuDir }),
+  suggestSwitchDataDir: () => invoke<string>("suggest_switch_data_dir"),
+  switchInstallStatus: (dataDir?: string) =>
+    invoke<{
+      dataDir: string;
+      valid: boolean;
+      keysDir?: string;
+      firmwareDir?: string;
+      prodKeys?: boolean;
+      titleKeys?: boolean;
+      firmwareCount?: number;
+    }>("switch_install_status", { dataDir: dataDir ?? null }),
+  installSwitchKeys: (dataDir: string, source: string) =>
+    invoke<OpResult & { installed?: string[] }>("install_switch_keys", { dataDir, source }),
+  installSwitchFirmware: (dataDir: string, source: string) =>
+    invoke<OpResult & { installed?: number }>("install_switch_firmware", { dataDir, source }),
+
   getWiiUMlcPath: () => invoke<string>("get_wiiu_mlc_path"),
   getWiiUMlcInfo: (emuDir?: string) =>
     invoke<{ xmlPath: string; mlcPath: string }>("get_wiiu_mlc_info", { emuDir: emuDir ?? null }),

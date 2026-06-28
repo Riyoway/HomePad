@@ -940,6 +940,26 @@ body.console-mode .app-icon .tile-icon {
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
 }
 
+/* Installer action buttons. */
+.settings-modal .install-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.settings-modal .install-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 16px; border-radius: 10px;
+  background: var(--btn-bg); color: var(--fg);
+  border: 1px solid var(--glass-border-strong);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: background 140ms ease, transform 120ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+.settings-modal .install-btn:hover {
+  background: var(--btn-bg-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px var(--shadow);
+}
+.settings-modal .install-btn:active { transform: translateY(0); box-shadow: none; }
+.settings-modal .install-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(63, 193, 255, 0.55); }
+.settings-modal .install-btn:disabled { opacity: 0.5; cursor: default; transform: none; box-shadow: none; }
+.settings-modal .install-btn svg { width: 17px; height: 17px; flex: 0 0 auto; }
+
 /* melonDS column group headers (Nintendo DS / Nintendo DSi). */
 .settings-modal .mel-col > .section-subtitle {
   display: flex; align-items: center; gap: 7px;

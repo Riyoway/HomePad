@@ -8,6 +8,7 @@ mod melonds;
 mod paths;
 mod settings;
 mod state;
+mod switch;
 mod sysstatus;
 mod systems;
 mod tray;
@@ -50,6 +51,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .manage(AppState {
             nand_cycle: Mutex::new(NandCycle::default()),
+            switch_cycle: Mutex::new(NandCycle::default()),
             download,
             discord,
             launch_gen: Arc::new(AtomicU64::new(0)),
@@ -81,6 +83,10 @@ pub fn run() {
             validate::suggest_3ds_nand,
             validate::validate_3ds_nand,
             validate::three_ds_home_status,
+            switch::suggest_switch_data_dir,
+            switch::switch_install_status,
+            switch::install_switch_keys,
+            switch::install_switch_firmware,
             validate::validate_wiiu_home,
             validate::get_wiiu_mlc_path,
             validate::get_wiiu_mlc_info,

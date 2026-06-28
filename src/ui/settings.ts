@@ -54,6 +54,8 @@ const NAV_ICONS: Record<string, string> = {
     '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="9" rx="4.5"/><path d="M7.5 11v3M6 12.5h3" stroke-linecap="round"/><circle cx="16" cy="11.5" r="1.1"/><circle cx="18" cy="13.5" r="1.1"/></svg>',
   disp:
     '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4" stroke-linecap="round"/></svg>',
+  install:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11M8 10l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" stroke-linecap="round"/></svg>',
 };
 
 function tabButton(id: string, label: string, active: boolean): HTMLButtonElement {
@@ -211,6 +213,17 @@ interface HomeStatus {
   path?: string;
 }
 
+// A single ok/warn status chip with a leading icon.
+function statusChip(ok: boolean, text: string): HTMLSpanElement {
+  const chip = document.createElement("span");
+  chip.className = "feature-chip " + (ok ? "ok" : "warn");
+  chip.innerHTML = ok ? CHECK_ICON : WARN_ICON;
+  const t = document.createElement("span");
+  t.textContent = text;
+  chip.appendChild(t);
+  return chip;
+}
+
 // Render the "Home System" status (found/region + title ID) into a chip row,
 // shared by the 3DS NAND and Cemu MLC cards.
 function renderHomeStatus(container: HTMLElement, hs: HomeStatus | null): void {
@@ -253,9 +266,10 @@ export async function showSettings(): Promise<void> {
   const tabAudio = tabButton("audio", "Audio", true);
   const tabGen = tabButton("gen", "General", false);
   const tabEmu = tabButton("emu", "Emulator", false);
+  const tabInstall = tabButton("install", "Installer", false);
   const tabDisp = tabButton("disp", "Display", false);
-  const allTabs = [tabAudio, tabGen, tabEmu, tabDisp];
-  const ids = ["audio", "gen", "emu", "disp"];
+  const allTabs = [tabAudio, tabGen, tabEmu, tabInstall, tabDisp];
+  const ids = ["audio", "gen", "emu", "install", "disp"];
   allTabs.forEach((t, i) => {
     const id = ids[i];
     t.setAttribute("role", "tab");
@@ -267,6 +281,7 @@ export async function showSettings(): Promise<void> {
   tabs.appendChild(tabAudio);
   tabs.appendChild(tabGen);
   tabs.appendChild(tabEmu);
+  tabs.appendChild(tabInstall);
   tabs.appendChild(tabDisp);
 
   const body = document.createElement("div");
@@ -1129,6 +1144,183 @@ export async function showSettings(): Promise<void> {
   updateCustomVisibility();
   iconColorSel.addEventListener("change", updateCustomVisibility);
 
+  // ---- Installer: Nintendo Switch firmware & keys --------------------------
+  const secInstall = section("Installer");
+  const swTitle = document.createElement("div");
+  swTitle.className = "subsection-title";
+  swTitle.textContent = "Nintendo Switch";
+
+  const swCard = document.createElement("div");
+  swCard.className = "settings-card data-card";
+  const swNote = document.createElement("div");
+  swNote.className = "card-note";
+  swNote.textContent =
+    "Install system firmware and decryption keys into your Switch emulator's data folder (Eden, Citron, Sudachi, Suyu).";
+
+  const switchDataInput = textInput("Switch data folder (auto-detected)");
+  switchDataInput.setAttribute("aria-label", "Switch data folder");
+  switchDataInput.value = current?.emulator?.switchDataDir || "";
+  bindPathInput(switchDataInput, "dir");
+  if (!switchDataInput.value) {
+    try {
+      const s = await api.suggestSwitchDataDir();
+      if (s) switchDataInput.value = s;
+    } catch {}
+  }
+  const swBrowse = document.createElement("button");
+  swBrowse.type = "button";
+  swBrowse.className = "btn icon-only";
+  swBrowse.title = "Browse";
+  swBrowse.setAttribute("aria-label", "Browse Switch data folder");
+  swBrowse.innerHTML = FOLDER_SVG;
+  const swFind = document.createElement("button");
+  swFind.type = "button";
+  swFind.className = "btn icon-only";
+  swFind.title = "Auto-detect";
+  swFind.setAttribute("aria-label", "Auto-detect Switch data folder");
+  swFind.innerHTML =
+    '<svg viewBox="0 0 24 24" class="icon"><circle cx="11" cy="11" r="7" fill="none" stroke-width="2"/><path d="M20 20l-4.2-4.2" fill="none" stroke-width="2" stroke-linecap="round"/></svg>';
+  const swGroup = document.createElement("div");
+  swGroup.className = "hstack";
+  swGroup.appendChild(switchDataInput);
+  swGroup.appendChild(swBrowse);
+  swGroup.appendChild(swFind);
+
+  const swStatus = document.createElement("div");
+  swStatus.className = "features";
+
+  const keysBtn = document.createElement("button");
+  keysBtn.type = "button";
+  keysBtn.className = "install-btn";
+  keysBtn.innerHTML = `${FILE_ICON}<span>Install Keys…</span>`;
+  const fwBtn = document.createElement("button");
+  fwBtn.type = "button";
+  fwBtn.className = "install-btn";
+  fwBtn.innerHTML = `${FILE_ICON}<span>Install Firmware…</span>`;
+
+  const updateInstallEnabled = () => {
+    const has = !!switchDataInput.value.trim();
+    keysBtn.disabled = !has;
+    fwBtn.disabled = !has;
+  };
+
+  const refreshSwitchStatus = async () => {
+    try {
+      const st = await api.switchInstallStatus(switchDataInput.value.trim() || undefined);
+      swStatus.replaceChildren();
+      if (!st?.valid) return;
+      swStatus.appendChild(statusChip(!!st.prodKeys, st.prodKeys ? "prod.keys" : "prod.keys missing"));
+      if (st.titleKeys) {
+        const c = document.createElement("span");
+        c.className = "feature-chip";
+        c.textContent = "title.keys";
+        swStatus.appendChild(c);
+      }
+      const fw = st.firmwareCount || 0;
+      swStatus.appendChild(
+        statusChip(fw > 0, fw > 0 ? `Firmware · ${fw} files` : "Firmware not installed")
+      );
+    } catch {
+      swStatus.replaceChildren();
+    }
+  };
+
+  swBrowse.addEventListener("click", async () => {
+    const res = await api.openDir({
+      title: "Select Switch data folder",
+      defaultPath: switchDataInput.value || undefined,
+    });
+    if (res?.ok && res.path) {
+      switchDataInput.value = res.path;
+      updateInstallEnabled();
+      void checkPathInput(switchDataInput);
+      refreshSwitchStatus();
+    }
+  });
+  swFind.addEventListener("click", async () => {
+    try {
+      const s = await api.suggestSwitchDataDir();
+      if (s) {
+        switchDataInput.value = s;
+        updateInstallEnabled();
+        void checkPathInput(switchDataInput);
+        refreshSwitchStatus();
+      } else {
+        showPopup("No Switch emulator data folder found", "warning");
+      }
+    } catch (e: any) {
+      showPopup(String(e?.message || e), "error");
+    }
+  });
+  switchDataInput.addEventListener("change", () => {
+    updateInstallEnabled();
+    refreshSwitchStatus();
+  });
+  switchDataInput.addEventListener("blur", () => {
+    updateInstallEnabled();
+    refreshSwitchStatus();
+  });
+
+  keysBtn.addEventListener("click", async () => {
+    const res = await api.openFile({
+      title: "Select prod.keys",
+      filters: [{ name: "Decryption Keys", extensions: ["keys"] }],
+    });
+    if (!res?.ok || !res.path) return;
+    keysBtn.disabled = true;
+    try {
+      const r = await api.installSwitchKeys(switchDataInput.value.trim(), res.path);
+      if (r?.ok) {
+        showPopup(`Keys installed (${(r.installed || []).join(", ") || "prod.keys"})`, "success");
+        refreshSwitchStatus();
+      } else {
+        showPopup(r?.error || "Failed to install keys", "error");
+      }
+    } catch (e: any) {
+      showPopup(String(e?.message || e), "error");
+    } finally {
+      updateInstallEnabled();
+    }
+  });
+  fwBtn.addEventListener("click", async () => {
+    const res = await api.openDir({ title: "Select firmware folder (contains .nca files)" });
+    if (!res?.ok || !res.path) return;
+    fwBtn.disabled = true;
+    const prev = fwBtn.innerHTML;
+    fwBtn.innerHTML = `${FILE_ICON}<span>Installing…</span>`;
+    try {
+      const r = await api.installSwitchFirmware(switchDataInput.value.trim(), res.path);
+      if (r?.ok) {
+        showPopup(`Firmware installed (${r.installed} files)`, "success");
+        refreshSwitchStatus();
+      } else {
+        showPopup(r?.error || "Failed to install firmware", "error");
+      }
+    } catch (e: any) {
+      showPopup(String(e?.message || e), "error");
+    } finally {
+      fwBtn.innerHTML = prev;
+      updateInstallEnabled();
+    }
+  });
+
+  const swField = document.createElement("div");
+  swField.className = "field";
+  swField.appendChild(fieldLabel("Data Folder"));
+  swField.appendChild(swGroup);
+  swField.appendChild(swStatus);
+  const actionsRow = document.createElement("div");
+  actionsRow.className = "install-actions";
+  actionsRow.appendChild(keysBtn);
+  actionsRow.appendChild(fwBtn);
+  swField.appendChild(actionsRow);
+  swCard.appendChild(swNote);
+  swCard.appendChild(swField);
+  secInstall.appendChild(swTitle);
+  secInstall.appendChild(swCard);
+  updateInstallEnabled();
+  refreshSwitchStatus();
+
   const errBox = errorBox();
   if (nandDir.value) {
     try {
@@ -1235,6 +1427,7 @@ export async function showSettings(): Promise<void> {
       current.emulator = {
         mode,
         nandDir: nand,
+        switchDataDir: switchDataInput.value.trim(),
         paths: newPaths,
         afterLaunch: afterSel.value as EmulatorSettings["afterLaunch"],
         fullscreenHome: !!fullscreenChk.checked,
@@ -1350,6 +1543,13 @@ export async function showSettings(): Promise<void> {
   panelEmu.setAttribute("aria-labelledby", "tab-emu");
   panelEmu.hidden = true;
   panelEmu.appendChild(secEmu);
+  const panelInstall = document.createElement("div");
+  panelInstall.className = "panel";
+  panelInstall.id = "panel-install";
+  panelInstall.setAttribute("role", "tabpanel");
+  panelInstall.setAttribute("aria-labelledby", "tab-install");
+  panelInstall.hidden = true;
+  panelInstall.appendChild(secInstall);
   const panelDisp = document.createElement("div");
   panelDisp.className = "panel";
   panelDisp.id = "panel-disp";
@@ -1362,6 +1562,7 @@ export async function showSettings(): Promise<void> {
     audio: panelAudio,
     gen: panelGen,
     emu: panelEmu,
+    install: panelInstall,
     disp: panelDisp,
   };
   function activateTab(id: string, focus = true): void {
@@ -1441,6 +1642,7 @@ export async function showSettings(): Promise<void> {
   body.appendChild(panelAudio);
   body.appendChild(panelGen);
   body.appendChild(panelEmu);
+  body.appendChild(panelInstall);
   body.appendChild(panelDisp);
   modal.appendChild(errBox);
   modal.appendChild(footer);

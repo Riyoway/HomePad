@@ -10,6 +10,7 @@ export interface AudioSettings {
 export interface EmulatorSettings {
   mode?: EmuMode;
   nandDir?: string;
+  switchDataDir?: string;
   paths?: Record<string, string>;
   afterLaunch?: AfterLaunch;
   fullscreenHome?: boolean;
