@@ -226,8 +226,24 @@ function handlePad(gp: Gamepad): void {
   prev[9] = start;
 }
 
+function resetPadState(): void {
+  prev[0] = false;
+  prev[1] = false;
+  prev[9] = false;
+  dirHeld = false;
+}
+
 function gamepadLoop(): void {
   const tick = () => {
+    // Only act on the controller while HomePad actually has window focus.
+    // After launching an emulator the game takes the foreground; without this
+    // guard the Gamepad API keeps reporting state and HomePad would react in
+    // the background to input meant for the emulator.
+    if (!document.hasFocus()) {
+      resetPadState();
+      requestAnimationFrame(tick);
+      return;
+    }
     const list = navigator.getGamepads ? navigator.getGamepads() : [];
     const gp = Array.from(list).find((p): p is Gamepad => !!p && p.connected);
     if (gp) handlePad(gp);
