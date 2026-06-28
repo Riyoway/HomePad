@@ -904,13 +904,6 @@ body.console-mode .app-icon .tile-icon {
   padding-left: 22px;
 }
 
-/* Subtle row highlight so folder rows are easier to scan/aim at. */
-.settings-modal .sys-list .row {
-  border-radius: 8px;
-  transition: background 140ms ease;
-}
-.settings-modal .sys-list .row:hover { background: var(--glass-border); }
-
 /* Collapse the two-column blocks when the window/modal is narrow. */
 @media (max-width: 760px) {
   .settings-modal .mel-grid {
