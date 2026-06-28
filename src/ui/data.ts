@@ -52,9 +52,10 @@ export async function renderAppsFromConfig(): Promise<void> {
       )
       .filter((p): p is string => Boolean(p));
 
-    let imgPath = iconPaths[0] ?? null;
+    // getIconPath supplies the white/black variant for known consoles; the
+    // config icon is only a fallback (e.g. Switch). No dummy icon needed.
+    const imgPath = getIconPath(name, iconPaths[0] ?? "", settings);
     if (imgPath) {
-      imgPath = getIconPath(name, imgPath, settings);
       const loader = document.createElement("div");
       loader.className = "img-loader";
       icon.appendChild(loader);

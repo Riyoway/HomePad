@@ -12,8 +12,7 @@ const SYSTEMS_JSON: &str = r##"
         "args": { "emulator": [], "systemMenu": ["-b", "always"], "fullscreen": "-f" },
         "source": { "github": { "owner": "melonDS-emu", "repo": "melonDS", "match": "windows-x86_64", "archive": "zip" } }
       }
-    ],
-    "icon": [ "/assets/DS.png" ]
+    ]
   },
   "Nintendo DSi": {
     "emulators": [
@@ -24,8 +23,7 @@ const SYSTEMS_JSON: &str = r##"
         "args": { "emulator": [], "systemMenu": ["-b", "always"], "fullscreen": "-f" },
         "source": { "github": { "owner": "melonDS-emu", "repo": "melonDS", "match": "windows-x86_64", "archive": "zip" } }
       }
-    ],
-    "icon": [ "/assets/DSi.png" ]
+    ]
   },
   "Nintendo 3DS": {
     "emulators": [
@@ -65,8 +63,7 @@ const SYSTEMS_JSON: &str = r##"
       "KR": "00000000000000000000000000000000/title/00040030/0000a902/content/*.app",
       "CN": "00000000000000000000000000000000/title/00040030/0000a102/content/*.app",
       "TW": "00000000000000000000000000000000/title/0004001b/00018002/content/*.app"
-    },
-    "icon": [ "/assets/3DS.png" ]
+    }
   },
   "Nintendo Wii": {
     "emulators": [
@@ -77,8 +74,7 @@ const SYSTEMS_JSON: &str = r##"
         "args": { "emulator": [], "systemMenu": ["-b", "--nand_title=0000000100000002"], "fullscreen": "" },
         "source": { "url": "https://dl.dolphin-emu.org/releases/2606/dolphin-2606-x64.7z", "archive": "7z" }
       }
-    ],
-    "icon": [ "/assets/Wii.png" ]
+    ]
   },
   "Nintendo Wii U": {
     "emulators": [
@@ -94,8 +90,7 @@ const SYSTEMS_JSON: &str = r##"
       "JP": "sys/title/00050010/10040000/code/men.rpx",
       "US": "sys/title/00050010/10040100/code/men.rpx",
       "EU": "sys/title/00050010/10040200/code/men.rpx"
-    },
-    "icon": [ "/assets/WiiU.png" ]
+    }
   },
   "Nintendo Switch": {
     "emulators": [
