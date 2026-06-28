@@ -108,10 +108,16 @@ const SYSTEMS_JSON: &str = r##"
       },
       {
         "id": "citron",
-        "name": "Citron",
+        "name": "Citron-Neo",
         "exe": "citron.exe",
         "args": { "emulator": [], "systemMenu": [], "fullscreen": "-f" },
         "source": { "github": { "owner": "citron-neo", "repo": "emulator", "match": "x64-msvc", "archive": "zip" } }
+      },
+      {
+        "id": "sudachi",
+        "name": "Sudachi",
+        "exe": "sudachi.exe",
+        "args": { "emulator": [], "systemMenu": ["-qlaunch"], "fullscreen": "-f" }
       },
       {
         "id": "suyu",
