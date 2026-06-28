@@ -61,7 +61,11 @@ function btn(gp: Gamepad, i: number): boolean {
 
 function getVisibleFocusableElements(): HTMLElement[] {
   const selector = "button, input, select, textarea, a[href], [tabindex]";
-  const elements = Array.from(document.querySelectorAll<HTMLElement>(selector));
+  // While a modal overlay is open, trap navigation inside it so directional
+  // input can't jump to the tiles/buttons behind the scrim.
+  const openOverlay = document.querySelector<HTMLElement>(".overlay.show");
+  const root: ParentNode = openOverlay ?? document;
+  const elements = Array.from(root.querySelectorAll<HTMLElement>(selector));
   return elements.filter((el) => {
     if ((el as any).disabled) return false;
     if (el.getAttribute("aria-disabled") === "true") return false;

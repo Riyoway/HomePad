@@ -39,6 +39,9 @@ function ensureOverlay(): HTMLElement {
   }
   ov.innerHTML = "";
   ov.style.display = "flex";
+  // Reused overlays may have had `show` stripped by a prior close; re-add it so
+  // `.overlay.show` checks (focus trapping, anyOverlayOpen) stay correct.
+  ov.classList.add("show");
   return ov;
 }
 
