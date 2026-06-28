@@ -1009,6 +1009,12 @@ body.console-mode .app-icon .tile-icon {
   padding-bottom: 12px;
 }
 .switch-modal .modal-body .section > .row:last-child { border-bottom: 0; }
+/* A subsection heading already draws its own top border; drop the preceding
+   row's bottom border so the two don't stack into a double divider. */
+.switch-modal .modal-body .section > .row:has(+ .subsection-title) {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
 .switch-modal .sys-list .row,
 .switch-modal .settings-card .row { border-bottom: 0 !important; padding-bottom: 0; }
 
