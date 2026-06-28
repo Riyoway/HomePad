@@ -589,11 +589,12 @@ body.console-mode .app-icon .tile-icon {
   box-shadow: 0 0 0 3px rgba(63,193,255,.5);
 }
 
-.features { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-.feature-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 999px; font-size: 12px; background: var(--chip-bg); border: 1px solid var(--chip-border); color: var(--fg); }
+.features { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
+.feature-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; font-size: 12px; line-height: 1.5; background: var(--chip-bg); border: 1px solid var(--chip-border); color: var(--fg); overflow: visible; }
 .feature-chip { transition: transform 140ms ease, background 140ms ease, border-color 140ms ease; }
 .feature-chip:hover { transform: translateY(-1px); background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.18); }
-.feature-chip .icon { width: 16px; height: 16px; fill: currentColor; stroke: currentColor; opacity: .95; }
+.feature-chip > span { line-height: 1.5; }
+.feature-chip .icon { width: 15px; height: 15px; fill: currentColor; stroke: currentColor; opacity: .95; flex: 0 0 auto; }
 .feature-chip.ok { background: rgba(63,193,255,0.15); border-color: rgba(63,193,255,0.35); }
 .feature-chip.warn { background: rgba(255,200,0,0.12); border-color: rgba(255,200,0,0.35); }
 .pad-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
@@ -949,7 +950,7 @@ body.console-mode .app-icon .tile-icon {
   padding: 9px 18px; border-radius: 10px;
   background: var(--btn-bg); color: var(--fg);
   border: 1px solid var(--glass-border-strong);
-  font-size: 13px; font-weight: 600; line-height: 1.4; white-space: nowrap;
+  font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1.4; white-space: nowrap;
   cursor: pointer; overflow: visible;
   transition: background 140ms ease, transform 120ms ease, border-color 140ms ease, box-shadow 140ms ease;
 }
