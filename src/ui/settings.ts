@@ -190,6 +190,20 @@ async function loadSystems(): Promise<string[]> {
 const FOLDER_SVG =
   '<svg viewBox="0 0 24 24" class="icon"><path d="M4 7h5l2 2h9v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" fill="none" stroke-width="2" stroke-linejoin="round"/><path d="M4 7V6a2 2 0 0 1 2-2h4l2 3" fill="none" stroke-width="2" stroke-linecap="round"/></svg>';
 
+const CHECK_ICON =
+  '<svg class="icon" style="fill:none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+const WARN_ICON =
+  '<svg class="icon" style="fill:none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';
+const FILE_ICON =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>';
+
+function fieldLabel(text: string): HTMLDivElement {
+  const d = document.createElement("div");
+  d.className = "field-label";
+  d.textContent = text;
+  return d;
+}
+
 export async function showSettings(): Promise<void> {
   await loadSettings();
   await loadSystems();
@@ -392,7 +406,7 @@ export async function showSettings(): Promise<void> {
   nandGroup.appendChild(nandDir);
   nandGroup.appendChild(nandBrowse);
   nandGroup.appendChild(nandFind);
-  const nandRow = row("3DS NAND Folder", nandGroup);
+  nandDir.setAttribute("aria-label", "3DS NAND folder");
 
   const paths = current?.emulator?.paths || {};
   const sysList = document.createElement("div");
@@ -490,7 +504,7 @@ export async function showSettings(): Promise<void> {
 
   const melTitle = document.createElement("div");
   melTitle.className = "subsection-title";
-  melTitle.textContent = "melonDS (DS/DSi) BIOS/Firmware/NAND";
+  melTitle.textContent = "melonDS (DS / DSi)";
   secEmu.appendChild(melTitle);
 
   function makePathRow(
@@ -606,37 +620,34 @@ export async function showSettings(): Promise<void> {
   // Nintendo 3DS — dedicated card for the Home Menu NAND folder.
   const threeDsTitle = document.createElement("div");
   threeDsTitle.className = "subsection-title";
-  threeDsTitle.textContent = "Nintendo 3DS NAND";
+  threeDsTitle.textContent = "Nintendo 3DS";
   const threeDsCard = document.createElement("div");
-  threeDsCard.className = "settings-card";
+  threeDsCard.className = "settings-card data-card";
   const threeDsNote = document.createElement("div");
-  threeDsNote.className = "section-subtitle";
-  threeDsNote.textContent = "Required to boot the 3DS Home Menu.";
+  threeDsNote.className = "card-note";
+  threeDsNote.textContent = "NAND folder used to boot the 3DS Home Menu.";
+  const threeDsField = document.createElement("div");
+  threeDsField.className = "field";
+  threeDsField.appendChild(fieldLabel("NAND Folder"));
+  threeDsField.appendChild(nandGroup);
   threeDsCard.appendChild(threeDsNote);
-  threeDsCard.appendChild(nandRow);
+  threeDsCard.appendChild(threeDsField);
   secEmu.appendChild(threeDsTitle);
   secEmu.appendChild(threeDsCard);
 
   // Nintendo Wii U — dedicated card for Cemu's mlc_path (settings.xml).
   const cemuTitle = document.createElement("div");
   cemuTitle.className = "subsection-title";
-  cemuTitle.textContent = "Cemu (Wii U) MLC";
+  cemuTitle.textContent = "Nintendo Wii U (Cemu)";
   const cemuCard = document.createElement("div");
-  cemuCard.className = "settings-card";
+  cemuCard.className = "settings-card data-card";
   const cemuNote = document.createElement("div");
-  cemuNote.className = "section-subtitle";
-  cemuNote.textContent = "Cemu's mlc_path, read from and saved to settings.xml.";
+  cemuNote.className = "card-note";
+  cemuNote.textContent = "MLC location, read from and written to Cemu's settings.xml.";
 
-  const mlcWrap = document.createElement("div");
-  mlcWrap.className = "row";
-  mlcWrap.id = "wiiu-mlc-row";
-  const mlcLabel = document.createElement("div");
-  mlcLabel.className = "label";
-  mlcLabel.textContent = "MLC Path";
-  const mlcCtrl = document.createElement("div");
-  mlcCtrl.className = "control";
   const mlcInput = textInput("MLC path not found");
   mlcInput.id = "wiiu-mlc-input";
+  mlcInput.setAttribute("aria-label", "Cemu MLC path");
   bindPathInput(mlcInput, "dir");
   const mlcBrowse = document.createElement("button");
   mlcBrowse.type = "button";
@@ -651,16 +662,24 @@ export async function showSettings(): Promise<void> {
   mlcSave.setAttribute("aria-label", "Save MLC path to settings.xml");
   mlcSave.innerHTML =
     '<svg viewBox="0 0 24 24" class="icon"><path d="M5 13l4 4L19 7" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  const mlcHint = document.createElement("div");
-  mlcHint.id = "wiiu-mlc-hint";
-  mlcHint.style.cssText =
-    "font-size:11px;color:var(--fg-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;";
+  const mlcGroup = document.createElement("div");
+  mlcGroup.className = "hstack";
+  mlcGroup.appendChild(mlcInput);
+  mlcGroup.appendChild(mlcBrowse);
+  mlcGroup.appendChild(mlcSave);
+
+  // Meta line: which settings.xml the value is read from / written to.
+  const mlcMeta = document.createElement("div");
+  mlcMeta.className = "field-meta";
+  mlcMeta.innerHTML = `${FILE_ICON}<span class="meta-key">settings.xml</span>`;
+  const mlcMetaPath = document.createElement("span");
+  mlcMetaPath.className = "meta-path";
+  mlcMeta.appendChild(mlcMetaPath);
 
   // Status of the Home Menu file (men.rpx) used to boot the Wii U Home System,
   // plus the detected region and title ID when present.
   const homeStatus = document.createElement("div");
   homeStatus.className = "features";
-  homeStatus.style.marginTop = "4px";
 
   // Read the mlc_path from the Wii U emulator folder currently entered in the
   // UI (falls back to the saved path when the field is empty).
@@ -669,12 +688,12 @@ export async function showSettings(): Promise<void> {
       const info = await api.getWiiUMlcInfo(wiiuEmuInput?.value.trim() || undefined);
       mlcInput.value = info?.mlcPath || "";
       mlcInput.placeholder = info?.mlcPath ? "" : "MLC path not found";
-      mlcHint.textContent = info?.xmlPath ? `settings.xml: ${info.xmlPath}` : "settings.xml: not found";
-      mlcHint.title = info?.xmlPath || "";
+      mlcMetaPath.textContent = info?.xmlPath || "not found";
+      mlcMeta.title = info?.xmlPath || "";
       mlcSave.style.display = info?.xmlPath ? "" : "none";
       void checkPathInput(mlcInput);
     } catch {
-      mlcHint.textContent = "Failed to read mlc info";
+      mlcMetaPath.textContent = "unavailable";
       mlcSave.style.display = "none";
     }
     try {
@@ -682,9 +701,10 @@ export async function showSettings(): Promise<void> {
       homeStatus.replaceChildren();
       const chip = document.createElement("span");
       chip.className = "feature-chip " + (hs?.found ? "ok" : "warn");
-      chip.textContent = hs?.found
-        ? `Home Menu found · ${hs.regionLabel}`
-        : "Home Menu (men.rpx) not found";
+      chip.innerHTML = hs?.found ? CHECK_ICON : WARN_ICON;
+      const label = document.createElement("span");
+      label.textContent = hs?.found ? `Home Menu · ${hs.regionLabel}` : "Home Menu not found";
+      chip.appendChild(label);
       if (hs?.path) chip.title = hs.path;
       homeStatus.appendChild(chip);
       if (hs?.found && hs.titleId) {
@@ -724,23 +744,14 @@ export async function showSettings(): Promise<void> {
     }
   });
 
-  const mlcGroup = document.createElement("div");
-  mlcGroup.className = "hstack";
-  mlcGroup.appendChild(mlcInput);
-  mlcGroup.appendChild(mlcBrowse);
-  mlcGroup.appendChild(mlcSave);
-  // Keep the input row and its hint in one grid cell (the control uses
-  // display:contents, so loose children would scatter across the columns).
-  const mlcStack = document.createElement("div");
-  mlcStack.className = "vstack";
-  mlcStack.appendChild(mlcGroup);
-  mlcStack.appendChild(mlcHint);
-  mlcStack.appendChild(homeStatus);
-  mlcCtrl.appendChild(mlcStack);
-  mlcWrap.appendChild(mlcLabel);
-  mlcWrap.appendChild(mlcCtrl);
+  const cemuField = document.createElement("div");
+  cemuField.className = "field";
+  cemuField.appendChild(fieldLabel("MLC Path"));
+  cemuField.appendChild(mlcGroup);
+  cemuField.appendChild(mlcMeta);
+  cemuField.appendChild(homeStatus);
   cemuCard.appendChild(cemuNote);
-  cemuCard.appendChild(mlcWrap);
+  cemuCard.appendChild(cemuField);
   secEmu.appendChild(cemuTitle);
   secEmu.appendChild(cemuCard);
   refreshMlcRow();
