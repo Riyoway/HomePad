@@ -1,4 +1,7 @@
-use crate::homemenu::{find_cemu_settings_path, resolve_3ds_home, resolve_wiiu_home, resolve_wiiu_mlc, write_wiiu_mlc};
+use crate::homemenu::{
+    find_cemu_settings_path, resolve_3ds_home, resolve_wiiu_home, resolve_wiiu_home_detailed,
+    resolve_wiiu_mlc, write_wiiu_mlc,
+};
 use crate::settings::{emulator_path, read_settings};
 use crate::state::AppState;
 use crate::systems::systems;
@@ -96,6 +99,30 @@ pub fn get_wiiu_mlc_info(emu_dir: Option<String>) -> serde_json::Value {
         .unwrap_or_default();
     let mlc = resolve_wiiu_mlc(&emu_dir).unwrap_or_default();
     serde_json::json!({ "xmlPath": xml_path, "mlcPath": mlc })
+}
+
+/// Report whether the Wii U Home Menu (men.rpx) needed to boot the Home System
+/// exists under the MLC, and if so which region/title it is.
+#[tauri::command]
+pub fn wiiu_home_status(emu_dir: Option<String>) -> serde_json::Value {
+    let emu_dir = match emu_dir {
+        Some(d) if !d.trim().is_empty() => d,
+        _ => {
+            let settings = read_settings();
+            emulator_path(&settings, "Nintendo Wii U").unwrap_or_default()
+        }
+    };
+    let rel = rel_for("Nintendo Wii U");
+    match resolve_wiiu_home_detailed(&emu_dir, &rel) {
+        Some((region, label, title_id, path)) => json!({
+            "found": true,
+            "region": region,
+            "regionLabel": label,
+            "titleId": title_id,
+            "path": path,
+        }),
+        None => json!({ "found": false }),
+    }
 }
 
 /// Write a new mlc_path value into Cemu's settings.xml.

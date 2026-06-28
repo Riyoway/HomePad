@@ -46,6 +46,14 @@ export const api = {
   getWiiUMlcPath: () => invoke<string>("get_wiiu_mlc_path"),
   getWiiUMlcInfo: (emuDir?: string) =>
     invoke<{ xmlPath: string; mlcPath: string }>("get_wiiu_mlc_info", { emuDir: emuDir ?? null }),
+  wiiuHomeStatus: (emuDir?: string) =>
+    invoke<{
+      found: boolean;
+      region?: string;
+      regionLabel?: string;
+      titleId?: string;
+      path?: string;
+    }>("wiiu_home_status", { emuDir: emuDir ?? null }),
   setWiiUMlcPath: (mlcPath: string) => invoke<OpResult>("set_wiiu_mlc_path", { mlcPath }),
 
   downloadSystem: (system: string, key?: string) =>

@@ -170,3 +170,50 @@ pub fn resolve_wiiu_home(emu_dir: &str, rel: &Value) -> Option<String> {
     }
     None
 }
+
+/// Human-friendly label for a Wii U Home Menu region key.
+fn wiiu_region_label(key: &str) -> &'static str {
+    match key {
+        "JP" => "Japan",
+        "US" => "USA",
+        "EU" => "Europe",
+        _ => "Unknown region",
+    }
+}
+
+/// Extract the 16-hex title ID from a `sys/title/<hi>/<lo>/code/men.rpx` path.
+fn title_id_from_rel(rel_path: &str) -> Option<String> {
+    let norm = rel_path.replace('\\', "/");
+    let comps: Vec<&str> = norm.split('/').filter(|s| !s.is_empty()).collect();
+    let idx = comps.iter().position(|c| c.eq_ignore_ascii_case("title"))?;
+    let hi = comps.get(idx + 1)?;
+    let lo = comps.get(idx + 2)?;
+    Some(format!("{hi}{lo}").to_uppercase())
+}
+
+/// Locate the Wii U Home Menu (men.rpx) and report which region/title it is.
+/// Returns `(region_key, region_label, title_id, path)`.
+pub fn resolve_wiiu_home_detailed(
+    emu_dir: &str,
+    rel: &Value,
+) -> Option<(String, String, String, String)> {
+    let mlc = resolve_wiiu_mlc(emu_dir)?;
+    // Only an object preserves the region keys; serde_json keeps insertion
+    // order (JP, US, EU) thanks to the preserve_order feature.
+    if let Value::Object(map) = rel {
+        for (region, val) in map {
+            if let Some(rel_path) = val.as_str() {
+                let men = Path::new(&mlc).join(rel_path);
+                if men.is_file() {
+                    return Some((
+                        region.clone(),
+                        wiiu_region_label(region).to_string(),
+                        title_id_from_rel(rel_path).unwrap_or_default(),
+                        men.to_string_lossy().to_string(),
+                    ));
+                }
+            }
+        }
+    }
+    None
+}

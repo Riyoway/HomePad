@@ -653,7 +653,14 @@ export async function showSettings(): Promise<void> {
     '<svg viewBox="0 0 24 24" class="icon"><path d="M5 13l4 4L19 7" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const mlcHint = document.createElement("div");
   mlcHint.id = "wiiu-mlc-hint";
-  mlcHint.style.cssText = "font-size:11px;color:var(--fg-muted);margin-top:6px;word-break:break-all;";
+  mlcHint.style.cssText =
+    "font-size:11px;color:var(--fg-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;";
+
+  // Status of the Home Menu file (men.rpx) used to boot the Wii U Home System,
+  // plus the detected region and title ID when present.
+  const homeStatus = document.createElement("div");
+  homeStatus.className = "features";
+  homeStatus.style.marginTop = "4px";
 
   // Read the mlc_path from the Wii U emulator folder currently entered in the
   // UI (falls back to the saved path when the field is empty).
@@ -663,11 +670,31 @@ export async function showSettings(): Promise<void> {
       mlcInput.value = info?.mlcPath || "";
       mlcInput.placeholder = info?.mlcPath ? "" : "MLC path not found";
       mlcHint.textContent = info?.xmlPath ? `settings.xml: ${info.xmlPath}` : "settings.xml: not found";
+      mlcHint.title = info?.xmlPath || "";
       mlcSave.style.display = info?.xmlPath ? "" : "none";
       void checkPathInput(mlcInput);
     } catch {
       mlcHint.textContent = "Failed to read mlc info";
       mlcSave.style.display = "none";
+    }
+    try {
+      const hs = await api.wiiuHomeStatus(wiiuEmuInput?.value.trim() || undefined);
+      homeStatus.replaceChildren();
+      const chip = document.createElement("span");
+      chip.className = "feature-chip " + (hs?.found ? "ok" : "warn");
+      chip.textContent = hs?.found
+        ? `Home Menu found · ${hs.regionLabel}`
+        : "Home Menu (men.rpx) not found";
+      if (hs?.path) chip.title = hs.path;
+      homeStatus.appendChild(chip);
+      if (hs?.found && hs.titleId) {
+        const idChip = document.createElement("span");
+        idChip.className = "feature-chip";
+        idChip.textContent = `Title ID ${hs.titleId}`;
+        homeStatus.appendChild(idChip);
+      }
+    } catch {
+      homeStatus.replaceChildren();
     }
   };
 
@@ -702,8 +729,14 @@ export async function showSettings(): Promise<void> {
   mlcGroup.appendChild(mlcInput);
   mlcGroup.appendChild(mlcBrowse);
   mlcGroup.appendChild(mlcSave);
-  mlcCtrl.appendChild(mlcGroup);
-  mlcCtrl.appendChild(mlcHint);
+  // Keep the input row and its hint in one grid cell (the control uses
+  // display:contents, so loose children would scatter across the columns).
+  const mlcStack = document.createElement("div");
+  mlcStack.className = "vstack";
+  mlcStack.appendChild(mlcGroup);
+  mlcStack.appendChild(mlcHint);
+  mlcStack.appendChild(homeStatus);
+  mlcCtrl.appendChild(mlcStack);
   mlcWrap.appendChild(mlcLabel);
   mlcWrap.appendChild(mlcCtrl);
   cemuCard.appendChild(cemuNote);

@@ -83,6 +83,7 @@ pub fn run() {
             validate::validate_wiiu_home,
             validate::get_wiiu_mlc_path,
             validate::get_wiiu_mlc_info,
+            validate::wiiu_home_status,
             validate::set_wiiu_mlc_path,
             dialogs::open_dir,
             dialogs::open_file,
