@@ -1086,6 +1086,15 @@ body.console-mode .app-icon .tile-icon {
   color: var(--accent-2); border: 1px solid rgba(86, 227, 159, 0.4);
   background: rgba(86, 227, 159, 0.12); border-radius: 999px; padding: 2px 8px;
 }
+/* Context-menu item icons. */
+.ctx-ico {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 17px; height: 17px; flex: 0 0 auto; color: var(--fg-muted);
+}
+.ctx-ico svg { width: 17px; height: 17px; }
+.ctx-item:hover .ctx-ico { color: var(--fg); }
+.ctx-item.disabled .ctx-ico { opacity: 0.5; }
+
 .update-modal .update-relname { font-size: 14px; font-weight: 600; color: var(--fg); opacity: 0.9; }
 .update-modal .update-notes {
   margin: 0; max-height: 300px; overflow: auto;

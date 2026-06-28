@@ -3,6 +3,15 @@ import { showPopup } from "./toast";
 import { playClick, playError, playComplete } from "./sounds";
 import type { Settings, AppPopup } from "../types";
 
+const CTX_ICONS = {
+  home:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>',
+  play:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5v14l11-7z"/></svg>',
+  folder:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7h6l2 2h10v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg>',
+} as const;
+
 function escapeHtml(s: unknown): string {
   return String(s).replace(
     /[&<>"]+/g,
@@ -125,11 +134,24 @@ export function setupAppsContextMenu(): void {
     return "file://" + s;
   };
 
-  const makeItem = (label: string, onClick: () => void | Promise<void>, disabled = false) => {
+  const makeItem = (
+    label: string,
+    onClick: () => void | Promise<void>,
+    disabled = false,
+    icon = "",
+  ) => {
     const li = document.createElement("div");
     li.className = "ctx-item";
-    li.textContent = label;
     li.setAttribute("role", "menuitem");
+    if (icon) {
+      const ico = document.createElement("span");
+      ico.className = "ctx-ico";
+      ico.innerHTML = icon;
+      li.appendChild(ico);
+    }
+    const text = document.createElement("span");
+    text.textContent = label;
+    li.appendChild(text);
     if (disabled) li.classList.add("disabled");
     if (!disabled)
       li.addEventListener("click", async (e) => {
@@ -193,23 +215,25 @@ export function setupAppsContextMenu(): void {
       }
     };
 
-    menu.appendChild(makeItem("Launch Home Menu", () => doLaunch("system-menu")));
-    menu.appendChild(makeItem("Launch Emulator", () => doLaunch("emulator")));
+    menu.appendChild(makeItem("Launch Home Menu", () => doLaunch("system-menu"), false, CTX_ICONS.home));
+    menu.appendChild(makeItem("Launch Emulator", () => doLaunch("emulator"), false, CTX_ICONS.play));
     menu.appendChild(sep());
-    menu.appendChild(makeItem("Open Emulator Folder", () => doOpenFolder(emuDirUrl), !emuDirUrl));
+    menu.appendChild(
+      makeItem("Open Emulator Folder", () => doOpenFolder(emuDirUrl), !emuDirUrl, CTX_ICONS.folder),
+    );
 
     if (is3ds) {
       const raw = settings?.emulator?.nandDir || "";
       const expanded = raw ? await api.expandPath(raw) : "";
       const ok = expanded ? await api.pathExists(expanded, "dir") : false;
       const url = ok ? pathToFileUrl(expanded) : "";
-      menu.appendChild(makeItem("Open NAND Folder", () => doOpenFolder(url), !url));
+      menu.appendChild(makeItem("Open NAND Folder", () => doOpenFolder(url), !url, CTX_ICONS.folder));
     }
     if (isWiiU) {
       const mlc = await api.getWiiUMlcPath();
       const ok = mlc ? await api.pathExists(mlc, "dir") : false;
       const url = ok ? pathToFileUrl(mlc) : "";
-      menu.appendChild(makeItem("Open MLC Folder", () => doOpenFolder(url), !url));
+      menu.appendChild(makeItem("Open MLC Folder", () => doOpenFolder(url), !url, CTX_ICONS.folder));
     }
 
     document.body.appendChild(menu);
