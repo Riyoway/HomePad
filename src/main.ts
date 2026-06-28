@@ -12,6 +12,7 @@ import { showSettings } from "./ui/settings";
 import { openDownloaderModal } from "./ui/downloader";
 import { openControllersModal, setupGamepadIndicator } from "./ui/controllers";
 import { openHelpModal } from "./ui/help";
+import { checkForUpdates } from "./ui/update";
 import { setupStatus } from "./ui/status";
 import { setupConsoleMode, toggleConsoleMode } from "./ui/console";
 import { playClick } from "./ui/sounds";
@@ -93,7 +94,7 @@ function wireFooter(): void {
   click("btn-controllers", () => openControllersModal());
   click("btn-downloader", () => openDownloaderModal());
   click("btn-website", () => void api.openExternal(LINKS.website));
-  click("btn-update", () => void api.openExternal(LINKS.update));
+  click("btn-update", () => void checkForUpdates());
   click("btn-fullscreen", () => void toggleConsoleMode());
 }
 

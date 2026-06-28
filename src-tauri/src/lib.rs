@@ -10,6 +10,7 @@ mod settings;
 mod state;
 mod switch;
 mod threeds;
+mod update;
 mod sysstatus;
 mod systems;
 mod tray;
@@ -76,6 +77,7 @@ pub fn run() {
             commands::save_settings,
             commands::quit_app,
             commands::open_external,
+            update::check_update,
             commands::discord_status,
             commands::discord_retry,
             commands::set_fullscreen,

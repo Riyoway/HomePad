@@ -1074,6 +1074,30 @@ body.console-mode .app-icon .tile-icon {
 .switch-modal .hint.primary:hover { background: var(--accent); filter: brightness(1.08); }
 .switch-modal .hint.primary .glyph { background: rgba(255,255,255,.22); }
 
+/* Update-available dialog. */
+.switch-modal.update-modal { width: min(560px, 92vw); max-height: min(82vh, 600px); height: auto; }
+.update-modal .modal-body { display: flex; flex-direction: column; gap: 14px; }
+.update-modal .update-versions { display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 800; }
+.update-modal .ver-cur { color: var(--fg-muted); }
+.update-modal .ver-arrow { color: var(--fg-muted); font-weight: 400; }
+.update-modal .ver-new { color: var(--accent); }
+.update-modal .ver-tag {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+  color: var(--accent-2); border: 1px solid rgba(86, 227, 159, 0.4);
+  background: rgba(86, 227, 159, 0.12); border-radius: 999px; padding: 2px 8px;
+}
+.update-modal .update-relname { font-size: 14px; font-weight: 600; color: var(--fg); opacity: 0.9; }
+.update-modal .update-notes {
+  margin: 0; max-height: 300px; overflow: auto;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+  font-family: inherit; font-size: 12.5px; line-height: 1.55;
+  color: var(--fg); opacity: 0.85;
+  background: var(--chip-bg); border: 1px solid var(--glass-border);
+  border-radius: 10px; padding: 12px 14px;
+}
+.update-modal .update-notes::-webkit-scrollbar { width: 8px; }
+.update-modal .update-notes::-webkit-scrollbar-thumb { background: var(--glass-border-strong); border-radius: 999px; }
+
 .switch-modal.controllers-modal .controllers-list { display: grid; gap: 12px; }
 .pad-card {
   display: grid; grid-template-columns: 96px 1fr auto; gap: 16px; align-items: center;

@@ -107,7 +107,19 @@ export const api = {
   launchAction: (systemName: string, action: string) =>
     invoke<OpResult>("launch_action", { systemName, action }),
   openExternal: (url: string) => invoke<OpResult>("open_external", { url }),
-  checkUpdate: (url: string) => invoke<OpResult>("open_external", { url }),
+  checkUpdate: () =>
+    invoke<{
+      ok: boolean;
+      error?: string;
+      current: string;
+      latest?: string;
+      name?: string;
+      notes?: string;
+      url?: string;
+      prerelease?: boolean;
+      hasUpdate?: boolean;
+      noReleases?: boolean;
+    }>("check_update"),
 
   discordRetry: () => invoke<OpResult>("discord_retry"),
   getDiscordStatus: () => invoke<DiscordStatus>("discord_status"),
