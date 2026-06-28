@@ -953,15 +953,15 @@ export async function showSettings(): Promise<void> {
   afterSel.value = current?.emulator?.afterLaunch || "nothing";
   secGen.appendChild(row("After launching emulator", afterSel));
 
+  // No existence validation here: the download folder is a destination that
+  // is created on demand, so a not-yet-existing path is perfectly valid.
   const dlDirInput = textInput("e.g. %LocalAppData%\\HomePad\\Emulators");
-  bindPathInput(dlDirInput, "dir");
   dlDirInput.value = current?.downloader?.dir || "%LocalAppData%\\HomePad\\Emulators";
   (async () => {
     try {
       const expanded = await api.expandPath(dlDirInput.value);
       if (expanded) dlDirInput.value = expanded;
     } catch {}
-    void checkPathInput(dlDirInput);
   })();
   const dlDirBrowse = document.createElement("button");
   dlDirBrowse.type = "button";
