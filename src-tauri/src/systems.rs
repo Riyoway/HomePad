@@ -44,7 +44,7 @@ const SYSTEMS_JSON: &str = r##"
       {
         "id": "mandarine",
         "name": "Mandarine",
-        "exe": "mandarine.exe",
+        "exe": "mandarine-qt.exe",
         "args": { "emulator": [], "systemMenu": ["${homeMenu}"], "fullscreen": "-f" },
         "source": { "github": { "owner": "ptyfyre", "repo": "mandarine-neo", "match": "windows-msvc", "archive": "zip" } }
       },
