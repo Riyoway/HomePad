@@ -9,6 +9,7 @@ mod paths;
 mod settings;
 mod state;
 mod switch;
+mod threeds;
 mod sysstatus;
 mod systems;
 mod tray;
@@ -52,6 +53,7 @@ pub fn run() {
         .manage(AppState {
             nand_cycle: Mutex::new(NandCycle::default()),
             switch_cycle: Mutex::new(NandCycle::default()),
+            threeds_cycle: Mutex::new(NandCycle::default()),
             download,
             discord,
             launch_gen: Arc::new(AtomicU64::new(0)),
@@ -87,6 +89,9 @@ pub fn run() {
             switch::switch_install_status,
             switch::install_switch_keys,
             switch::install_switch_firmware,
+            threeds::suggest_3ds_data_dir,
+            threeds::three_ds_install_status,
+            threeds::install_3ds_keys,
             validate::validate_wiiu_home,
             validate::get_wiiu_mlc_path,
             validate::get_wiiu_mlc_info,

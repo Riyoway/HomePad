@@ -198,6 +198,8 @@ const WARN_ICON =
   '<svg class="icon" style="fill:none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';
 const FILE_ICON =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>';
+const SEARCH_SVG =
+  '<svg viewBox="0 0 24 24" class="icon"><circle cx="11" cy="11" r="7" fill="none" stroke-width="2"/><path d="M20 20l-4.2-4.2" fill="none" stroke-width="2" stroke-linecap="round"/></svg>';
 
 function fieldLabel(text: string): HTMLDivElement {
   const d = document.createElement("div");
@@ -222,6 +224,157 @@ function statusChip(ok: boolean, text: string): HTMLSpanElement {
   t.textContent = text;
   chip.appendChild(t);
   return chip;
+}
+
+// A plain (informational) chip.
+function neutralChip(text: string): HTMLSpanElement {
+  const c = document.createElement("span");
+  c.className = "feature-chip";
+  c.textContent = text;
+  return c;
+}
+
+interface InstallerSpec {
+  title: string;
+  note: string;
+  ariaLabel: string;
+  initialDir: string;
+  suggest: () => Promise<string>;
+  renderStatus: (container: HTMLElement, dir: string) => Promise<void>;
+  actions: Array<{ label: string; run: (dir: string) => Promise<void> }>;
+}
+
+// Build a console "installer" card: an auto-detected data-folder field (browse +
+// rotating auto-detect), a status chip row, and a set of install action buttons.
+function buildInstallerCard(spec: InstallerSpec): {
+  title: HTMLElement;
+  card: HTMLElement;
+  input: HTMLInputElement;
+} {
+  const title = document.createElement("div");
+  title.className = "subsection-title";
+  title.textContent = spec.title;
+
+  const card = document.createElement("div");
+  card.className = "settings-card data-card";
+  const note = document.createElement("div");
+  note.className = "card-note";
+  note.textContent = spec.note;
+
+  const input = textInput("Data folder (auto-detected)");
+  input.setAttribute("aria-label", spec.ariaLabel);
+  input.value = spec.initialDir || "";
+  bindPathInput(input, "dir");
+
+  const browse = document.createElement("button");
+  browse.type = "button";
+  browse.className = "btn icon-only";
+  browse.title = "Browse";
+  browse.setAttribute("aria-label", `${spec.ariaLabel} — browse`);
+  browse.innerHTML = FOLDER_SVG;
+  const find = document.createElement("button");
+  find.type = "button";
+  find.className = "btn icon-only";
+  find.title = "Auto-detect";
+  find.setAttribute("aria-label", `${spec.ariaLabel} — auto-detect`);
+  find.innerHTML = SEARCH_SVG;
+  const group = document.createElement("div");
+  group.className = "hstack";
+  group.append(input, browse, find);
+
+  const statusEl = document.createElement("div");
+  statusEl.className = "features";
+
+  const actionsRow = document.createElement("div");
+  actionsRow.className = "install-actions";
+  const actionBtns: HTMLButtonElement[] = [];
+
+  const refresh = () => void spec.renderStatus(statusEl, input.value.trim());
+  const updateEnabled = () => {
+    const has = !!input.value.trim();
+    actionBtns.forEach((b) => (b.disabled = !has));
+  };
+
+  for (const a of spec.actions) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "install-btn";
+    btn.innerHTML = FILE_ICON;
+    const sp = document.createElement("span");
+    sp.textContent = a.label;
+    btn.appendChild(sp);
+    btn.addEventListener("click", async () => {
+      actionBtns.forEach((b) => (b.disabled = true));
+      try {
+        await a.run(input.value.trim());
+        refresh();
+      } catch (e: any) {
+        showPopup(String(e?.message || e), "error");
+      } finally {
+        updateEnabled();
+      }
+    });
+    actionBtns.push(btn);
+    actionsRow.appendChild(btn);
+  }
+
+  browse.addEventListener("click", async () => {
+    const res = await api.openDir({ title: "Select data folder", defaultPath: input.value || undefined });
+    if (res?.ok && res.path) {
+      input.value = res.path;
+      updateEnabled();
+      void checkPathInput(input);
+      refresh();
+    }
+  });
+  find.addEventListener("click", async () => {
+    try {
+      const s = await spec.suggest();
+      if (s) {
+        input.value = s;
+        updateEnabled();
+        void checkPathInput(input);
+        refresh();
+      } else {
+        showPopup("No data folder found in the usual locations", "warning");
+      }
+    } catch (e: any) {
+      showPopup(String(e?.message || e), "error");
+    }
+  });
+  const onEdit = () => {
+    updateEnabled();
+    refresh();
+  };
+  input.addEventListener("change", onEdit);
+  input.addEventListener("blur", onEdit);
+
+  const field = document.createElement("div");
+  field.className = "field";
+  field.appendChild(fieldLabel("Data Folder"));
+  field.appendChild(group);
+  field.appendChild(statusEl);
+  field.appendChild(actionsRow);
+  card.appendChild(note);
+  card.appendChild(field);
+
+  updateEnabled();
+  refresh();
+  // Auto-detect on open when nothing is saved yet.
+  if (!input.value) {
+    void spec
+      .suggest()
+      .then((s) => {
+        if (s && !input.value.trim()) {
+          input.value = s;
+          updateEnabled();
+          void checkPathInput(input);
+          refresh();
+        }
+      })
+      .catch(() => {});
+  }
+  return { title, card, input };
 }
 
 // Render the "Home System" status (found/region + title ID) into a chip row,
@@ -1144,183 +1297,91 @@ export async function showSettings(): Promise<void> {
   updateCustomVisibility();
   iconColorSel.addEventListener("change", updateCustomVisibility);
 
-  // ---- Installer: Nintendo Switch firmware & keys --------------------------
+  // ---- Installer: Switch firmware/keys + 3DS system files ------------------
   const secInstall = section("Installer");
-  const swTitle = document.createElement("div");
-  swTitle.className = "subsection-title";
-  swTitle.textContent = "Nintendo Switch";
 
-  const swCard = document.createElement("div");
-  swCard.className = "settings-card data-card";
-  const swNote = document.createElement("div");
-  swNote.className = "card-note";
-  swNote.textContent =
-    "Install system firmware and decryption keys into your Switch emulator's data folder (Eden, Citron, Sudachi, Suyu).";
-
-  const switchDataInput = textInput("Switch data folder (auto-detected)");
-  switchDataInput.setAttribute("aria-label", "Switch data folder");
-  switchDataInput.value = current?.emulator?.switchDataDir || "";
-  bindPathInput(switchDataInput, "dir");
-  if (!switchDataInput.value) {
-    try {
-      const s = await api.suggestSwitchDataDir();
-      if (s) switchDataInput.value = s;
-    } catch {}
-  }
-  const swBrowse = document.createElement("button");
-  swBrowse.type = "button";
-  swBrowse.className = "btn icon-only";
-  swBrowse.title = "Browse";
-  swBrowse.setAttribute("aria-label", "Browse Switch data folder");
-  swBrowse.innerHTML = FOLDER_SVG;
-  const swFind = document.createElement("button");
-  swFind.type = "button";
-  swFind.className = "btn icon-only";
-  swFind.title = "Auto-detect";
-  swFind.setAttribute("aria-label", "Auto-detect Switch data folder");
-  swFind.innerHTML =
-    '<svg viewBox="0 0 24 24" class="icon"><circle cx="11" cy="11" r="7" fill="none" stroke-width="2"/><path d="M20 20l-4.2-4.2" fill="none" stroke-width="2" stroke-linecap="round"/></svg>';
-  const swGroup = document.createElement("div");
-  swGroup.className = "hstack";
-  swGroup.appendChild(switchDataInput);
-  swGroup.appendChild(swBrowse);
-  swGroup.appendChild(swFind);
-
-  const swStatus = document.createElement("div");
-  swStatus.className = "features";
-
-  const keysBtn = document.createElement("button");
-  keysBtn.type = "button";
-  keysBtn.className = "install-btn";
-  keysBtn.innerHTML = `${FILE_ICON}<span>Install Keys…</span>`;
-  const fwBtn = document.createElement("button");
-  fwBtn.type = "button";
-  fwBtn.className = "install-btn";
-  fwBtn.innerHTML = `${FILE_ICON}<span>Install Firmware…</span>`;
-
-  const updateInstallEnabled = () => {
-    const has = !!switchDataInput.value.trim();
-    keysBtn.disabled = !has;
-    fwBtn.disabled = !has;
-  };
-
-  const refreshSwitchStatus = async () => {
-    try {
-      const st = await api.switchInstallStatus(switchDataInput.value.trim() || undefined);
-      swStatus.replaceChildren();
+  const switchInstaller = buildInstallerCard({
+    title: "Nintendo Switch",
+    note: "Install system firmware and decryption keys into your Switch emulator's data folder (Eden, Citron, Sudachi, Suyu).",
+    ariaLabel: "Switch data folder",
+    initialDir: current?.emulator?.switchDataDir || "",
+    suggest: () => api.suggestSwitchDataDir(),
+    renderStatus: async (container, dir) => {
+      const st = await api.switchInstallStatus(dir || undefined);
+      container.replaceChildren();
       if (!st?.valid) return;
-      swStatus.appendChild(statusChip(!!st.prodKeys, st.prodKeys ? "prod.keys" : "prod.keys missing"));
-      if (st.titleKeys) {
-        const c = document.createElement("span");
-        c.className = "feature-chip";
-        c.textContent = "title.keys";
-        swStatus.appendChild(c);
-      }
+      container.appendChild(statusChip(!!st.prodKeys, st.prodKeys ? "prod.keys" : "prod.keys missing"));
+      if (st.titleKeys) container.appendChild(neutralChip("title.keys"));
       const fw = st.firmwareCount || 0;
-      swStatus.appendChild(
-        statusChip(fw > 0, fw > 0 ? `Firmware · ${fw} files` : "Firmware not installed")
-      );
-    } catch {
-      swStatus.replaceChildren();
-    }
-  };
-
-  swBrowse.addEventListener("click", async () => {
-    const res = await api.openDir({
-      title: "Select Switch data folder",
-      defaultPath: switchDataInput.value || undefined,
-    });
-    if (res?.ok && res.path) {
-      switchDataInput.value = res.path;
-      updateInstallEnabled();
-      void checkPathInput(switchDataInput);
-      refreshSwitchStatus();
-    }
-  });
-  swFind.addEventListener("click", async () => {
-    try {
-      const s = await api.suggestSwitchDataDir();
-      if (s) {
-        switchDataInput.value = s;
-        updateInstallEnabled();
-        void checkPathInput(switchDataInput);
-        refreshSwitchStatus();
-      } else {
-        showPopup("No Switch emulator data folder found", "warning");
-      }
-    } catch (e: any) {
-      showPopup(String(e?.message || e), "error");
-    }
-  });
-  switchDataInput.addEventListener("change", () => {
-    updateInstallEnabled();
-    refreshSwitchStatus();
-  });
-  switchDataInput.addEventListener("blur", () => {
-    updateInstallEnabled();
-    refreshSwitchStatus();
+      container.appendChild(statusChip(fw > 0, fw > 0 ? `Firmware · ${fw} files` : "Firmware not installed"));
+    },
+    actions: [
+      {
+        label: "Install Keys…",
+        run: async (dir) => {
+          const res = await api.openFile({
+            title: "Select prod.keys",
+            filters: [{ name: "Decryption Keys", extensions: ["keys"] }],
+          });
+          if (!res?.ok || !res.path) return;
+          const r = await api.installSwitchKeys(dir, res.path);
+          if (r?.ok)
+            showPopup(`Keys installed (${(r.installed || []).join(", ") || "prod.keys"})`, "success");
+          else showPopup(r?.error || "Failed to install keys", "error");
+        },
+      },
+      {
+        label: "Install Firmware…",
+        run: async (dir) => {
+          const res = await api.openDir({ title: "Select firmware folder (contains .nca files)" });
+          if (!res?.ok || !res.path) return;
+          showPopup("Installing firmware…", "info");
+          const r = await api.installSwitchFirmware(dir, res.path);
+          if (r?.ok) showPopup(`Firmware installed (${r.installed} files)`, "success");
+          else showPopup(r?.error || "Failed to install firmware", "error");
+        },
+      },
+    ],
   });
 
-  keysBtn.addEventListener("click", async () => {
-    const res = await api.openFile({
-      title: "Select prod.keys",
-      filters: [{ name: "Decryption Keys", extensions: ["keys"] }],
-    });
-    if (!res?.ok || !res.path) return;
-    keysBtn.disabled = true;
-    try {
-      const r = await api.installSwitchKeys(switchDataInput.value.trim(), res.path);
-      if (r?.ok) {
-        showPopup(`Keys installed (${(r.installed || []).join(", ") || "prod.keys"})`, "success");
-        refreshSwitchStatus();
-      } else {
-        showPopup(r?.error || "Failed to install keys", "error");
-      }
-    } catch (e: any) {
-      showPopup(String(e?.message || e), "error");
-    } finally {
-      updateInstallEnabled();
-    }
-  });
-  fwBtn.addEventListener("click", async () => {
-    const res = await api.openDir({ title: "Select firmware folder (contains .nca files)" });
-    if (!res?.ok || !res.path) return;
-    fwBtn.disabled = true;
-    const prev = fwBtn.innerHTML;
-    fwBtn.innerHTML = `${FILE_ICON}<span>Installing…</span>`;
-    try {
-      const r = await api.installSwitchFirmware(switchDataInput.value.trim(), res.path);
-      if (r?.ok) {
-        showPopup(`Firmware installed (${r.installed} files)`, "success");
-        refreshSwitchStatus();
-      } else {
-        showPopup(r?.error || "Failed to install firmware", "error");
-      }
-    } catch (e: any) {
-      showPopup(String(e?.message || e), "error");
-    } finally {
-      fwBtn.innerHTML = prev;
-      updateInstallEnabled();
-    }
+  const threeDsInstaller = buildInstallerCard({
+    title: "Nintendo 3DS",
+    note: "Install 3DS system files (boot9.bin, aes_keys.txt, seeddb.bin, shared_font.bin) into your emulator's sysdata folder (Borked3DS, Azahar, Citra).",
+    ariaLabel: "3DS data folder",
+    initialDir: current?.emulator?.threeDsDataDir || "",
+    suggest: () => api.suggest3dsDataDir(),
+    renderStatus: async (container, dir) => {
+      const st = await api.threeDsInstallStatus(dir || undefined);
+      container.replaceChildren();
+      if (!st?.valid) return;
+      container.appendChild(statusChip(!!st.boot9, st.boot9 ? "boot9.bin" : "boot9.bin missing"));
+      container.appendChild(statusChip(!!st.aesKeys, st.aesKeys ? "aes_keys.txt" : "aes_keys.txt missing"));
+      if (st.seeddb) container.appendChild(neutralChip("seeddb.bin"));
+      if (st.sharedFont) container.appendChild(neutralChip("shared_font.bin"));
+    },
+    actions: [
+      {
+        label: "Install Keys…",
+        run: async (dir) => {
+          const res = await api.openFile({
+            title: "Select boot9.bin / aes_keys.txt",
+            filters: [{ name: "3DS system files", extensions: ["bin", "txt"] }],
+          });
+          if (!res?.ok || !res.path) return;
+          const r = await api.install3dsKeys(dir, res.path);
+          if (r?.ok) showPopup(`Installed: ${(r.installed || []).join(", ")}`, "success");
+          else showPopup(r?.error || "Failed to install 3DS keys", "error");
+        },
+      },
+    ],
   });
 
-  const swField = document.createElement("div");
-  swField.className = "field";
-  swField.appendChild(fieldLabel("Data Folder"));
-  swField.appendChild(swGroup);
-  swField.appendChild(swStatus);
-  const actionsRow = document.createElement("div");
-  actionsRow.className = "install-actions";
-  actionsRow.appendChild(keysBtn);
-  actionsRow.appendChild(fwBtn);
-  swField.appendChild(actionsRow);
-  swCard.appendChild(swNote);
-  swCard.appendChild(swField);
-  secInstall.appendChild(swTitle);
-  secInstall.appendChild(swCard);
-  updateInstallEnabled();
-  refreshSwitchStatus();
-
+  const switchDataInput = switchInstaller.input;
+  const threeDsDataInput = threeDsInstaller.input;
+  secInstall.appendChild(switchInstaller.title);
+  secInstall.appendChild(switchInstaller.card);
+  secInstall.appendChild(threeDsInstaller.title);
+  secInstall.appendChild(threeDsInstaller.card);
   const errBox = errorBox();
   if (nandDir.value) {
     try {
@@ -1428,6 +1489,7 @@ export async function showSettings(): Promise<void> {
         mode,
         nandDir: nand,
         switchDataDir: switchDataInput.value.trim(),
+        threeDsDataDir: threeDsDataInput.value.trim(),
         paths: newPaths,
         afterLaunch: afterSel.value as EmulatorSettings["afterLaunch"],
         fullscreenHome: !!fullscreenChk.checked,

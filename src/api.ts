@@ -67,6 +67,20 @@ export const api = {
   installSwitchFirmware: (dataDir: string, source: string) =>
     invoke<OpResult & { installed?: number }>("install_switch_firmware", { dataDir, source }),
 
+  suggest3dsDataDir: () => invoke<string>("suggest_3ds_data_dir"),
+  threeDsInstallStatus: (dataDir?: string) =>
+    invoke<{
+      dataDir: string;
+      valid: boolean;
+      sysdataDir?: string;
+      boot9?: boolean;
+      aesKeys?: boolean;
+      seeddb?: boolean;
+      sharedFont?: boolean;
+    }>("three_ds_install_status", { dataDir: dataDir ?? null }),
+  install3dsKeys: (dataDir: string, source: string) =>
+    invoke<OpResult & { installed?: string[] }>("install_3ds_keys", { dataDir, source }),
+
   getWiiUMlcPath: () => invoke<string>("get_wiiu_mlc_path"),
   getWiiUMlcInfo: (emuDir?: string) =>
     invoke<{ xmlPath: string; mlcPath: string }>("get_wiiu_mlc_info", { emuDir: emuDir ?? null }),

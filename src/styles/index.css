@@ -943,11 +943,14 @@ body.console-mode .app-icon .tile-icon {
 /* Installer action buttons. */
 .settings-modal .install-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
 .settings-modal .install-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 9px 16px; border-radius: 10px;
+  appearance: none; -webkit-appearance: none;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 38px;
+  padding: 9px 18px; border-radius: 10px;
   background: var(--btn-bg); color: var(--fg);
   border: 1px solid var(--glass-border-strong);
-  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-size: 13px; font-weight: 600; line-height: 1.4; white-space: nowrap;
+  cursor: pointer; overflow: visible;
   transition: background 140ms ease, transform 120ms ease, border-color 140ms ease, box-shadow 140ms ease;
 }
 .settings-modal .install-btn:hover {

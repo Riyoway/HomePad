@@ -11,6 +11,7 @@ export interface EmulatorSettings {
   mode?: EmuMode;
   nandDir?: string;
   switchDataDir?: string;
+  threeDsDataDir?: string;
   paths?: Record<string, string>;
   afterLaunch?: AfterLaunch;
   fullscreenHome?: boolean;
