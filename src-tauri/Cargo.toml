@@ -1,6 +1,6 @@
 [package]
 name = "homepad"
-version = "1.0.0"
+version = "1.0.1"
 description = "HomePad is an emulator home system launcher."
 authors = ["Riyo"]
 license = "MIT"
