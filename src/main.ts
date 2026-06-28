@@ -97,11 +97,21 @@ function wireFooter(): void {
   click("btn-fullscreen", () => void toggleConsoleMode());
 }
 
+function hideSplash(): void {
+  const splash = document.getElementById("splash");
+  if (!splash) return;
+  splash.classList.add("hide");
+  const remove = () => splash.remove();
+  splash.addEventListener("transitionend", remove, { once: true });
+  // Fallback in case the transition doesn't fire (e.g. reduced motion).
+  window.setTimeout(remove, 600);
+}
+
 function boot(): void {
   disableNativeTooltips();
   applyThemeFromSettings();
   wireFooter();
-  renderAppsFromConfig().then(() => {
+  const ready = renderAppsFromConfig().then(() => {
     initAppsScroller();
     setupAppsClickDelegation();
     setupAppsContextMenu();
@@ -110,6 +120,10 @@ function boot(): void {
   setupStatus();
   setupAppPopups();
   setupConsoleMode();
+  // Keep the opening screen up until the tiles are ready, but at least long
+  // enough to read as an intentional intro rather than a flash.
+  const minVisible = new Promise<void>((r) => window.setTimeout(r, 800));
+  Promise.allSettled([ready, minVisible]).then(hideSplash);
 }
 
 if (document.readyState === "loading") {

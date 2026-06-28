@@ -6,8 +6,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HomePad</title>
     <link id="theme-css" rel="stylesheet" href="/themes/dark.css" />
+    <style>
+      /* Opening screen — inlined so it paints on first frame, before the
+         bundle CSS loads. Removed by main.ts once the app is ready. */
+      #splash {
+        position: fixed;
+        inset: 0;
+        z-index: 100000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(180deg, #0e0f12 0%, #14161a 100%);
+        transition: opacity 0.45s ease;
+        animation: splash-failsafe 0s linear 8s forwards;
+      }
+      #splash.hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #splash .splash-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+      #splash .splash-logo {
+        width: 132px;
+        height: 132px;
+        border-radius: 28px;
+        filter: drop-shadow(0 16px 34px rgba(0, 0, 0, 0.55));
+        animation: splash-pop 720ms cubic-bezier(0.2, 1, 0.2, 1) both;
+      }
+      #splash .splash-title {
+        font-family: "Segoe Script", "Comic Sans MS", "Bradley Hand", cursive;
+        font-size: 30px;
+        letter-spacing: 1px;
+        color: #ffffff;
+        opacity: 0;
+        animation: splash-fade 600ms ease 200ms forwards;
+      }
+      #splash .splash-bar {
+        position: relative;
+        width: 150px;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        opacity: 0;
+        animation: splash-fade 600ms ease 340ms forwards;
+      }
+      #splash .splash-bar::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 40%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #3fc1ff, #7be3ff);
+        animation: splash-slide 1.15s ease-in-out infinite;
+      }
+      @keyframes splash-pop {
+        0% { opacity: 0; transform: translateY(12px) scale(0.84); }
+        60% { opacity: 1; transform: translateY(-5px) scale(1.05); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      @keyframes splash-fade { to { opacity: 1; } }
+      @keyframes splash-slide {
+        0% { transform: translateX(-120%); }
+        100% { transform: translateX(330%); }
+      }
+      @keyframes splash-failsafe {
+        to { opacity: 0; visibility: hidden; pointer-events: none; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #splash .splash-logo,
+        #splash .splash-title,
+        #splash .splash-bar { animation: none; opacity: 1; }
+        #splash .splash-bar::after { animation: none; }
+      }
+    </style>
   </head>
   <body>
+    <div id="splash" role="status" aria-label="Opening HomePad">
+      <div class="splash-inner">
+        <img class="splash-logo" src="/assets/app/homepad.png" alt="" />
+        <div class="splash-title">HomePad</div>
+        <div class="splash-bar" aria-hidden="true"></div>
+      </div>
+    </div>
     <header class="topbar" data-tauri-drag-region>
       <div class="brand">
         <span class="brand-title handwritten">HomePad</span>
