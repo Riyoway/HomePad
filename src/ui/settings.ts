@@ -1289,10 +1289,19 @@ export async function showSettings(): Promise<void> {
   const variantSystems = systemNames.filter((name) => ICON_VARIANTS[name]);
 
   for (const name of variantSystems) {
+    const variants = ICON_VARIANTS[name];
     const sysRow = document.createElement("div");
     sysRow.className = "row";
 
-    const sysLabel = consoleLabel(name);
+    const sysLabel = document.createElement("div");
+    sysLabel.className = "label sys-label";
+    const sysImg = document.createElement("img");
+    sysImg.className = "sys-ico sys-ico-swatch";
+    sysImg.alt = "";
+    const sysText = document.createElement("span");
+    sysText.textContent = name;
+    sysLabel.appendChild(sysImg);
+    sysLabel.appendChild(sysText);
 
     const sysCtrl = document.createElement("div");
     sysCtrl.className = "control";
@@ -1304,6 +1313,13 @@ export async function showSettings(): Promise<void> {
     ]);
     sysSel.value = current?.display?.iconCustomColor?.[name] || "white";
     customDropdowns[name] = sysSel;
+
+    // Preview the chosen color on the row's icon, live.
+    const applyIconColor = () => {
+      sysImg.src = sysSel.value === "black" ? variants.black : variants.white;
+    };
+    applyIconColor();
+    sysSel.addEventListener("change", applyIconColor);
 
     sysCtrl.appendChild(sysSel);
     sysRow.appendChild(sysLabel);

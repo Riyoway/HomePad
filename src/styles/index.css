@@ -883,6 +883,15 @@ body.console-mode .app-icon .tile-icon {
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
 }
 .settings-modal .sys-label > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Custom Icon Colors preview: a neutral swatch so both the white and the
+   black variant stay legible on the dark card. */
+.settings-modal .sys-label .sys-ico.sys-ico-swatch {
+  width: 30px; height: 30px; padding: 4px; box-sizing: border-box;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #aab2bd, #707a86);
+  border: 1px solid var(--glass-border-strong);
+  filter: none;
+}
 
 .settings-modal .text,
 .settings-modal .dropdown-toggle.select { height: 40px; padding-top: 0; padding-bottom: 0; }
