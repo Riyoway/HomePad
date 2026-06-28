@@ -175,7 +175,7 @@ body.console-mode .app-icon .tile-icon {
 .content::before,
 .content::after {
   content: "";
-  position: absolute; top: 0; bottom: 96px;
+  position: absolute; top: 0; bottom: 0;
   width: 48px; pointer-events: none; z-index: 2;
 }
 .content::before { left: 0; background: var(--edge-fade-left); }
