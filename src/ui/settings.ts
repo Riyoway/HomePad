@@ -204,6 +204,33 @@ function fieldLabel(text: string): HTMLDivElement {
   return d;
 }
 
+interface HomeStatus {
+  found: boolean;
+  regionLabel?: string;
+  titleId?: string;
+  path?: string;
+}
+
+// Render the "Home System" status (found/region + title ID) into a chip row,
+// shared by the 3DS NAND and Cemu MLC cards.
+function renderHomeStatus(container: HTMLElement, hs: HomeStatus | null): void {
+  container.replaceChildren();
+  const chip = document.createElement("span");
+  chip.className = "feature-chip " + (hs?.found ? "ok" : "warn");
+  chip.innerHTML = hs?.found ? CHECK_ICON : WARN_ICON;
+  const label = document.createElement("span");
+  label.textContent = hs?.found ? `Home Menu · ${hs.regionLabel}` : "Home Menu not found";
+  chip.appendChild(label);
+  if (hs?.path) chip.title = hs.path;
+  container.appendChild(chip);
+  if (hs?.found && hs.titleId) {
+    const idChip = document.createElement("span");
+    idChip.className = "feature-chip";
+    idChip.textContent = `Title ID ${hs.titleId}`;
+    container.appendChild(idChip);
+  }
+}
+
 export async function showSettings(): Promise<void> {
   await loadSettings();
   await loadSystems();
@@ -343,12 +370,16 @@ export async function showSettings(): Promise<void> {
       if (suggested) nandDir.value = suggested;
     } catch {}
   }
+  // Assigned when the 3DS card is built further down; the NAND handlers call
+  // it so the Home System status refreshes on edit/browse/find.
+  let refreshThreeDsStatus: () => void = () => {};
   const validateNandInput = async () => {
     try {
       const v = await api.validate3dsNand(nandDir.value.trim());
       if (!v?.ok) setError(errBox, v?.error || "Invalid 3DS NAND folder");
       else setError(errBox, "");
     } catch {}
+    refreshThreeDsStatus();
   };
   nandDir.addEventListener("change", validateNandInput);
   nandDir.addEventListener("blur", validateNandInput);
@@ -370,6 +401,7 @@ export async function showSettings(): Promise<void> {
         if (!v?.ok) setError(errBox, v?.error || "Invalid 3DS NAND folder");
         else setError(errBox, "");
       } catch {}
+      refreshThreeDsStatus();
     }
   });
   const nandFind = document.createElement("button");
@@ -392,6 +424,7 @@ export async function showSettings(): Promise<void> {
           setError(errBox, "");
           showPopup("3DS NAND folder validated", "success");
         }
+        refreshThreeDsStatus();
       } else {
         setError(errBox, "3DS NAND folder was not found in common locations");
         showPopup("3DS NAND folder was not found in common locations", "warning");
@@ -626,14 +659,26 @@ export async function showSettings(): Promise<void> {
   const threeDsNote = document.createElement("div");
   threeDsNote.className = "card-note";
   threeDsNote.textContent = "NAND folder used to boot the 3DS Home Menu.";
+  const threeDsStatus = document.createElement("div");
+  threeDsStatus.className = "features";
+  refreshThreeDsStatus = async () => {
+    try {
+      const hs = await api.threeDsHomeStatus(nandDir.value.trim() || undefined);
+      renderHomeStatus(threeDsStatus, hs);
+    } catch {
+      threeDsStatus.replaceChildren();
+    }
+  };
   const threeDsField = document.createElement("div");
   threeDsField.className = "field";
   threeDsField.appendChild(fieldLabel("NAND Folder"));
   threeDsField.appendChild(nandGroup);
+  threeDsField.appendChild(threeDsStatus);
   threeDsCard.appendChild(threeDsNote);
   threeDsCard.appendChild(threeDsField);
   secEmu.appendChild(threeDsTitle);
   secEmu.appendChild(threeDsCard);
+  refreshThreeDsStatus();
 
   // Nintendo Wii U — dedicated card for Cemu's mlc_path (settings.xml).
   const cemuTitle = document.createElement("div");
@@ -698,21 +743,7 @@ export async function showSettings(): Promise<void> {
     }
     try {
       const hs = await api.wiiuHomeStatus(wiiuEmuInput?.value.trim() || undefined);
-      homeStatus.replaceChildren();
-      const chip = document.createElement("span");
-      chip.className = "feature-chip " + (hs?.found ? "ok" : "warn");
-      chip.innerHTML = hs?.found ? CHECK_ICON : WARN_ICON;
-      const label = document.createElement("span");
-      label.textContent = hs?.found ? `Home Menu · ${hs.regionLabel}` : "Home Menu not found";
-      chip.appendChild(label);
-      if (hs?.path) chip.title = hs.path;
-      homeStatus.appendChild(chip);
-      if (hs?.found && hs.titleId) {
-        const idChip = document.createElement("span");
-        idChip.className = "feature-chip";
-        idChip.textContent = `Title ID ${hs.titleId}`;
-        homeStatus.appendChild(idChip);
-      }
+      renderHomeStatus(homeStatus, hs);
     } catch {
       homeStatus.replaceChildren();
     }

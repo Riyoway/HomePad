@@ -1,6 +1,6 @@
 use crate::homemenu::{
-    find_cemu_settings_path, resolve_3ds_home, resolve_wiiu_home, resolve_wiiu_home_detailed,
-    resolve_wiiu_mlc, write_wiiu_mlc,
+    find_cemu_settings_path, resolve_3ds_home, resolve_3ds_home_detailed, resolve_wiiu_home,
+    resolve_wiiu_home_detailed, resolve_wiiu_mlc, write_wiiu_mlc,
 };
 use crate::settings::{emulator_path, read_settings};
 use crate::state::AppState;
@@ -54,6 +54,35 @@ pub fn validate_3ds_nand(nand_dir: String) -> Value {
     match resolve_3ds_home(&nand_dir, &rel) {
         Some(p) if Path::new(&p).is_file() => json!({ "ok": true, "path": p }),
         _ => json!({ "ok": false, "error": "3DS Home Menu file not found in NAND" }),
+    }
+}
+
+/// Report whether the 3DS Home Menu app needed to boot the Home System exists
+/// in the NAND, and if so which region/title it is.
+#[tauri::command]
+pub fn three_ds_home_status(nand_dir: Option<String>) -> serde_json::Value {
+    let nand_dir = match nand_dir {
+        Some(d) if !d.trim().is_empty() => d,
+        _ => {
+            let settings = read_settings();
+            settings
+                .get("emulator")
+                .and_then(|e| e.get("nandDir"))
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string()
+        }
+    };
+    let rel = rel_for("Nintendo 3DS");
+    match resolve_3ds_home_detailed(&nand_dir, &rel) {
+        Some((region, label, title_id, path)) => json!({
+            "found": true,
+            "region": region,
+            "regionLabel": label,
+            "titleId": title_id,
+            "path": path,
+        }),
+        None => json!({ "found": false }),
     }
 }
 

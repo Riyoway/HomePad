@@ -80,6 +80,7 @@ pub fn run() {
             paths::path_exists,
             validate::suggest_3ds_nand,
             validate::validate_3ds_nand,
+            validate::three_ds_home_status,
             validate::validate_wiiu_home,
             validate::get_wiiu_mlc_path,
             validate::get_wiiu_mlc_info,

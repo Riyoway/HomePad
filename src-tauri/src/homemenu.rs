@@ -60,38 +60,84 @@ fn pick_app_from_content_dir(dir: &Path, prefer_base: &str) -> Option<String> {
     apps.last().map(|n| dir.join(n).to_string_lossy().to_string())
 }
 
+/// Resolve a single 3DS Home Menu candidate (NAND-relative path, possibly with
+/// a `*.app` wildcard) to the actual `.app` file on disk.
+fn resolve_3ds_app(nand_dir: &str, cand: &str) -> Option<String> {
+    let expanded = expand_env(cand);
+    let norm = expanded.replace('\\', "/");
+    let after = match find_ci_ascii(&norm, "/nand/") {
+        Some(idx) => norm[idx + 6..].to_string(),
+        None => norm.trim_start_matches('/').to_string(),
+    };
+    let after_path = Path::new(&after);
+    let base = after_path
+        .file_name()
+        .and_then(|s| s.to_str())
+        .unwrap_or("")
+        .to_string();
+    let prefer_base = if has_wildcard(&base) {
+        String::new()
+    } else {
+        base.clone()
+    };
+    let parent = after_path.parent().unwrap_or_else(|| Path::new(""));
+    let content_dir = Path::new(nand_dir).join(parent);
+    if !prefer_base.is_empty() {
+        let direct = content_dir.join(&prefer_base);
+        if direct.is_file() {
+            return Some(direct.to_string_lossy().to_string());
+        }
+    }
+    pick_app_from_content_dir(&content_dir, &prefer_base)
+}
+
 pub fn resolve_3ds_home(nand_dir: &str, rel: &Value) -> Option<String> {
     if nand_dir.is_empty() {
         return None;
     }
     for cand in flatten_rel(rel) {
-        let expanded = expand_env(&cand);
-        let norm = expanded.replace('\\', "/");
-        let after = match find_ci_ascii(&norm, "/nand/") {
-            Some(idx) => norm[idx + 6..].to_string(),
-            None => norm.trim_start_matches('/').to_string(),
-        };
-        let after_path = Path::new(&after);
-        let base = after_path
-            .file_name()
-            .and_then(|s| s.to_str())
-            .unwrap_or("")
-            .to_string();
-        let prefer_base = if has_wildcard(&base) {
-            String::new()
-        } else {
-            base.clone()
-        };
-        let parent = after_path.parent().unwrap_or_else(|| Path::new(""));
-        let content_dir = Path::new(nand_dir).join(parent);
-        if !prefer_base.is_empty() {
-            let direct = content_dir.join(&prefer_base);
-            if direct.is_file() {
-                return Some(direct.to_string_lossy().to_string());
-            }
-        }
-        if let Some(found) = pick_app_from_content_dir(&content_dir, &prefer_base) {
+        if let Some(found) = resolve_3ds_app(nand_dir, &cand) {
             return Some(found);
+        }
+    }
+    None
+}
+
+/// Human-friendly label for a 3DS Home Menu region key.
+fn region_label_3ds(key: &str) -> &'static str {
+    match key {
+        "JP" => "Japan",
+        "US" => "USA",
+        "EU" => "Europe",
+        "AU" => "Australia",
+        "KR" => "Korea",
+        "CN" => "China",
+        "TW" => "Taiwan",
+        _ => "Unknown region",
+    }
+}
+
+/// Locate the 3DS Home Menu app in the NAND and report which region/title it is.
+/// Returns `(region_key, region_label, title_id, path)`.
+pub fn resolve_3ds_home_detailed(
+    nand_dir: &str,
+    rel: &Value,
+) -> Option<(String, String, String, String)> {
+    if nand_dir.is_empty() {
+        return None;
+    }
+    if let Value::Object(map) = rel {
+        for (region, val) in map {
+            if let Some(cand) = val.as_str() {
+                if let Some(path) = resolve_3ds_app(nand_dir, cand) {
+                    return Some((
+                        region.clone(),
+                        region_label_3ds(region).to_string(),
+                        title_id_from_rel(cand).unwrap_or_default(),
+                        path,
+                    ));
+                }
+            }
         }
     }
     None

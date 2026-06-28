@@ -42,6 +42,14 @@ export const api = {
 
   suggest3dsNand: () => invoke<string>("suggest_3ds_nand"),
   validate3dsNand: (nandDir: string) => invoke<OpResult>("validate_3ds_nand", { nandDir }),
+  threeDsHomeStatus: (nandDir?: string) =>
+    invoke<{
+      found: boolean;
+      region?: string;
+      regionLabel?: string;
+      titleId?: string;
+      path?: string;
+    }>("three_ds_home_status", { nandDir: nandDir ?? null }),
   validateWiiUHome: (emuDir: string) => invoke<OpResult>("validate_wiiu_home", { emuDir }),
   getWiiUMlcPath: () => invoke<string>("get_wiiu_mlc_path"),
   getWiiUMlcInfo: (emuDir?: string) =>
