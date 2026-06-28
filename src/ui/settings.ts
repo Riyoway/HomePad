@@ -93,6 +93,47 @@ function textInput(placeholder = ""): HTMLInputElement {
   return i;
 }
 
+// Flag a path input red when its (non-empty) value points to something that
+// does not exist on disk. Empty values are treated as neutral, since many
+// path fields are optional.
+async function checkPathInput(input: HTMLInputElement): Promise<void> {
+  const kind = (input.dataset.pathKind as "file" | "dir" | "any") || "any";
+  const raw = input.value.trim();
+  if (!raw) {
+    input.classList.remove("invalid");
+    input.removeAttribute("title");
+    return;
+  }
+  try {
+    const expanded = (await api.expandPath(raw)) || raw;
+    const ok = await api.pathExists(expanded, kind);
+    input.classList.toggle("invalid", !ok);
+    if (ok) input.removeAttribute("title");
+    else input.title = kind === "file" ? "File not found" : "Folder not found";
+  } catch {
+    input.classList.remove("invalid");
+    input.removeAttribute("title");
+  }
+}
+
+function bindPathInput(input: HTMLInputElement, kind: "file" | "dir"): void {
+  input.dataset.pathKind = kind;
+  const check = () => void checkPathInput(input);
+  input.addEventListener("change", check);
+  input.addEventListener("blur", check);
+  // Clear the red state while the user is editing; re-check on blur/change.
+  input.addEventListener("input", () => {
+    input.classList.remove("invalid");
+    input.removeAttribute("title");
+  });
+}
+
+function validateAllPaths(root: ParentNode): void {
+  root
+    .querySelectorAll<HTMLInputElement>("input.text[data-path-kind]")
+    .forEach((i) => void checkPathInput(i));
+}
+
 function radio(name: string, value: string, checked: boolean, labelText: string): HTMLLabelElement {
   const w = document.createElement("label");
   w.className = "radio";
@@ -280,6 +321,7 @@ export async function showSettings(): Promise<void> {
   fullscreenWrap.appendChild(fullscreenCtrl);
 
   const nandDir = textInput("3DS NAND folder (needed when Launch Home System)");
+  bindPathInput(nandDir, "dir");
   nandDir.value = current?.emulator?.nandDir || "";
   if (!nandDir.value) {
     try {
@@ -370,6 +412,7 @@ export async function showSettings(): Promise<void> {
     const input = textInput(`Folder for ${name}`);
     input.value = paths[name] || "";
     input.dataset.system = name;
+    bindPathInput(input, "dir");
     if (name === "Nintendo Wii U") wiiuEmuInput = input;
     const browse = document.createElement("button");
     browse.type = "button";
@@ -525,6 +568,9 @@ export async function showSettings(): Promise<void> {
   dsiBIOS7.id = "dsi-bios7";
   dsiFW.id = "dsi-fw";
   dsiNAND.id = "dsi-nand";
+  for (const f of [dsBIOS9, dsBIOS7, dsFW, dsiBIOS9, dsiBIOS7, dsiFW, dsiNAND]) {
+    bindPathInput(f, "file");
+  }
 
   const dsGroupTitle = document.createElement("div");
   dsGroupTitle.className = "section-subtitle";
@@ -591,6 +637,7 @@ export async function showSettings(): Promise<void> {
   mlcCtrl.className = "control";
   const mlcInput = textInput("MLC path not found");
   mlcInput.id = "wiiu-mlc-input";
+  bindPathInput(mlcInput, "dir");
   const mlcBrowse = document.createElement("button");
   mlcBrowse.type = "button";
   mlcBrowse.className = "btn icon-only";
@@ -617,6 +664,7 @@ export async function showSettings(): Promise<void> {
       mlcInput.placeholder = info?.mlcPath ? "" : "MLC path not found";
       mlcHint.textContent = info?.xmlPath ? `settings.xml: ${info.xmlPath}` : "settings.xml: not found";
       mlcSave.style.display = info?.xmlPath ? "" : "none";
+      void checkPathInput(mlcInput);
     } catch {
       mlcHint.textContent = "Failed to read mlc info";
       mlcSave.style.display = "none";
@@ -713,6 +761,8 @@ export async function showSettings(): Promise<void> {
     } catch (e) {
       console.warn("[melonds] read error", e);
     }
+    // Values were just (re)populated programmatically; re-check path validity.
+    validateAllPaths(modal);
   }
 
   loadMelonDSToml();
@@ -904,12 +954,14 @@ export async function showSettings(): Promise<void> {
   secGen.appendChild(row("After launching emulator", afterSel));
 
   const dlDirInput = textInput("e.g. %LocalAppData%\\HomePad\\Emulators");
+  bindPathInput(dlDirInput, "dir");
   dlDirInput.value = current?.downloader?.dir || "%LocalAppData%\\HomePad\\Emulators";
   (async () => {
     try {
       const expanded = await api.expandPath(dlDirInput.value);
       if (expanded) dlDirInput.value = expanded;
     } catch {}
+    void checkPathInput(dlDirInput);
   })();
   const dlDirBrowse = document.createElement("button");
   dlDirBrowse.type = "button";
@@ -1328,6 +1380,17 @@ export async function showSettings(): Promise<void> {
     }
   };
   document.addEventListener("keydown", onEsc, { once: true });
+
+  // Flag any path fields whose value doesn't exist on disk. Re-run when the
+  // window regains focus, which fires after a native browse dialog closes, so
+  // freshly picked paths are validated too. The listener removes itself once
+  // Settings is closed.
+  validateAllPaths(modal);
+  const onWinFocus = () => {
+    if (ov.contains(modal) && ov.classList.contains("show")) validateAllPaths(modal);
+    else window.removeEventListener("focus", onWinFocus);
+  };
+  window.addEventListener("focus", onWinFocus);
 
   tabAudio.focus();
 }
