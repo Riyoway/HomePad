@@ -44,6 +44,13 @@ const SYSTEMS_JSON: &str = r##"
         "source": { "github": { "owner": "azahar-emu", "repo": "azahar", "match": "windows-msvc", "archive": "zip" } }
       },
       {
+        "id": "mandarine",
+        "name": "Mandarine",
+        "exe": "mandarine.exe",
+        "args": { "emulator": [], "systemMenu": ["${homeMenu}"], "fullscreen": "-f" },
+        "source": { "github": { "owner": "ptyfyre", "repo": "mandarine-neo", "match": "windows-msvc", "archive": "zip" } }
+      },
+      {
         "id": "citra",
         "name": "Citra",
         "exe": "citra-qt.exe",
@@ -68,7 +75,7 @@ const SYSTEMS_JSON: &str = r##"
         "name": "Dolphin",
         "exe": "dolphin.exe",
         "args": { "emulator": [], "systemMenu": ["-b", "--nand_title=0000000100000002"], "fullscreen": "" },
-        "source": { "url": "https://dl.dolphin-emu.org/releases/2506a/dolphin-2506a-x64.7z", "archive": "7z" }
+        "source": { "url": "https://dl.dolphin-emu.org/releases/2606/dolphin-2606-x64.7z", "archive": "7z" }
       }
     ],
     "icon": [ "/assets/Wii.png" ]
@@ -97,21 +104,14 @@ const SYSTEMS_JSON: &str = r##"
         "name": "Eden",
         "exe": "eden.exe",
         "args": { "emulator": [], "systemMenu": ["-qlaunch"], "fullscreen": "-f" },
-        "source": { "github": { "owner": "eden-emulator", "repo": "Releases", "match": "Eden-Windows", "archive": "zip" } }
+        "source": { "gitea": { "host": "git.eden-emu.dev", "owner": "eden-emu", "repo": "eden", "match": "amd64-msvc", "archive": "zip", "assetHost": "stable.eden-emu.dev" } }
       },
       {
         "id": "citron",
         "name": "Citron",
         "exe": "citron.exe",
         "args": { "emulator": [], "systemMenu": [], "fullscreen": "-f" },
-        "source": { "url": "https://files.catbox.moe/255ooi.zip", "archive": "zip" }
-      },
-      {
-        "id": "sudachi",
-        "name": "Sudachi",
-        "exe": "sudachi.exe",
-        "args": { "emulator": [], "systemMenu": ["-qlaunch"], "fullscreen": "-f" },
-        "source": { "github": { "owner": "emuplace", "repo": "sudachi.emuplace.app", "match": "sudachi-windows", "archive": "7z" } }
+        "source": { "github": { "owner": "citron-neo", "repo": "emulator", "match": "x64-msvc", "archive": "zip" } }
       },
       {
         "id": "suyu",

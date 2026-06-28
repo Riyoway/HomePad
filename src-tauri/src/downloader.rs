@@ -49,13 +49,19 @@ fn allowed_hosts() -> HashSet<String> {
         for sys in obj.values() {
             let emus = sys.get("emulators").and_then(|e| e.as_array());
             for emu in emus.into_iter().flatten() {
-                if let Some(url) = emu
-                    .get("source")
-                    .and_then(|s| s.get("url"))
-                    .and_then(|u| u.as_str())
-                {
+                let source = emu.get("source");
+                if let Some(url) = source.and_then(|s| s.get("url")).and_then(|u| u.as_str()) {
                     if let Some(h) = host_of(url) {
                         set.insert(h);
+                    }
+                }
+                // Gitea/Forgejo sources: allow both the API host and the asset CDN.
+                if let Some(gt) = source.and_then(|s| s.get("gitea")) {
+                    if let Some(h) = gt.get("host").and_then(|v| v.as_str()) {
+                        set.insert(h.to_string());
+                    }
+                    if let Some(h) = gt.get("assetHost").and_then(|v| v.as_str()) {
+                        set.insert(h.to_string());
                     }
                 }
             }
@@ -213,17 +219,15 @@ fn fetch_latest_asset(
     client: &reqwest::blocking::Client,
     app: &AppHandle,
     key: &Option<String>,
-    owner: &str,
-    repo: &str,
+    api: &str,
     archive: &str,
     match_pat: &str,
 ) -> Result<String, String> {
-    let api = format!("https://api.github.com/repos/{owner}/{repo}/releases/latest");
     emit_log(app, key, format!("HTTP GET {api}"));
     let mut last = String::from("request failed");
     for attempt in 1..=3 {
         let res = client
-            .get(&api)
+            .get(api)
             .header(reqwest::header::USER_AGENT, UA)
             .header(reqwest::header::ACCEPT, "application/vnd.github+json")
             .send()
@@ -385,7 +389,23 @@ fn run_download(
             if !url_allowed(&allowed, &api) {
                 return Err("Blocked host".into());
             }
-            let url = fetch_latest_asset(&client, &app, &key, owner, repo, &archive, match_pat)?;
+            let url = fetch_latest_asset(&client, &app, &key, &api, &archive, match_pat)?;
+            (url, archive)
+        } else if let Some(gt) = source.get("gitea") {
+            // Gitea/Forgejo release API (e.g. Eden on git.eden-emu.dev).
+            let host = gt.get("host").and_then(|v| v.as_str()).unwrap_or("");
+            let owner = gt.get("owner").and_then(|v| v.as_str()).unwrap_or("");
+            let repo = gt.get("repo").and_then(|v| v.as_str()).unwrap_or("");
+            let match_pat = gt.get("match").and_then(|v| v.as_str()).unwrap_or("");
+            let archive = gt.get("archive").and_then(|v| v.as_str()).unwrap_or("zip").to_lowercase();
+            if host.is_empty() || owner.is_empty() || repo.is_empty() {
+                return Err("Invalid Gitea source".into());
+            }
+            let api = format!("https://{host}/api/v1/repos/{owner}/{repo}/releases/latest");
+            if !url_allowed(&allowed, &api) {
+                return Err("Blocked host".into());
+            }
+            let url = fetch_latest_asset(&client, &app, &key, &api, &archive, match_pat)?;
             (url, archive)
         } else if let Some(url) = source.get("url").and_then(|v| v.as_str()) {
             let archive = source.get("archive").and_then(|v| v.as_str()).unwrap_or("zip").to_lowercase();
