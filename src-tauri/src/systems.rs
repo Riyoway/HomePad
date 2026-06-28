@@ -10,7 +10,7 @@ const SYSTEMS_JSON: &str = r##"
         "name": "melonDS",
         "exe": "melonDS.exe",
         "args": { "emulator": [], "systemMenu": ["-b", "always"], "fullscreen": "-f" },
-        "source": { "github": { "owner": "melonDS-emu", "repo": "melonDS", "match": "melonDS-windows-x86_64.zip", "archive": "zip" } }
+        "source": { "github": { "owner": "melonDS-emu", "repo": "melonDS", "match": "windows-x86_64", "archive": "zip" } }
       }
     ],
     "icon": [ "/assets/DS.png" ]
@@ -22,7 +22,7 @@ const SYSTEMS_JSON: &str = r##"
         "name": "melonDS",
         "exe": "melonDS.exe",
         "args": { "emulator": [], "systemMenu": ["-b", "always"], "fullscreen": "-f" },
-        "source": { "github": { "owner": "melonDS-emu", "repo": "melonDS", "match": "melonDS-windows-x86_64.zip", "archive": "zip" } }
+        "source": { "github": { "owner": "melonDS-emu", "repo": "melonDS", "match": "windows-x86_64", "archive": "zip" } }
       }
     ],
     "icon": [ "/assets/DSi.png" ]
