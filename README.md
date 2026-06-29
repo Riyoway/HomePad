@@ -25,14 +25,15 @@ emulators for the DS, DSi, 3DS, Wii, Wii U, and Switch — all from one place.
 ### 🎛️ Home & launching
 - **Console dashboard** — a clean, horizontally-scrolling tile grid for every system, launch on click.
 - **Two launch modes** — start the emulator directly, or boot straight into the console's **Home Menu / system menu**.
-- **Right-click menu** — per-tile actions to launch the Home Menu or emulator, and open the emulator / NAND / MLC folders.
+- **Switch Home Menu** — boot the Switch Home Menu even on emulators that don't accept a Home Menu flag: HomePad locates the Home Menu (qlaunch) inside the installed firmware automatically and launches it.
+- **Right-click menu** — per-tile actions (with icons) to launch the Home Menu or emulator, and open the emulator / NAND / MLC folders.
 - **Console mode** — a fullscreen, gamepad-navigable layout with on-screen hints; focus is trapped to the active screen so input never leaks to the background.
 - **Opening screen** — a branded splash while the app boots.
 
 ### 📥 Downloader & installer
 - **Built-in downloader** — fetch the latest emulator releases per system, with live progress and cancel.
 - **Installer tab** — set up the harder consoles in a couple of clicks:
-  - **Nintendo Switch** — install system **firmware** (NCA folder) and **decryption keys** (`prod.keys` / `title.keys`) into the emulator's data folder.
+  - **Nintendo Switch** — install system **firmware** (NCA folder) and **decryption keys** (`prod.keys` / `title.keys`) into the emulator's data folder; status chips show keys, firmware count, and whether the **Home Menu** is bootable.
   - **Nintendo 3DS** — install **system files** (`aes_keys.txt`, `seeddb.bin`, `shared_font.bin`) into the emulator's `sysdata` folder.
   - Data folders are **auto-detected** (portable `user/` next to the emulator, then `%APPDATA%`), with a rotating *find* button when several exist, plus live **status chips** showing what's already installed.
 
@@ -56,10 +57,10 @@ emulators for the DS, DSi, 3DS, Wii, Wii U, and Switch — all from one place.
 | System | Emulators |
 |--------|-----------|
 | Nintendo DS / DSi | melonDS |
-| Nintendo 3DS | Borked3DS, Azahar |
+| Nintendo 3DS | Borked3DS, Azahar, Mandarine |
 | Nintendo Wii | Dolphin |
 | Nintendo Wii U | Cemu |
-| Nintendo Switch | Eden, Citron, Sudachi, Suyu |
+| Nintendo Switch | Eden, Citron-Neo, Sudachi, Suyu |
 
 ## 🚀 Getting started
 
