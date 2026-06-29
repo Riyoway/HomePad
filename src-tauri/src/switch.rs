@@ -138,6 +138,9 @@ pub fn switch_install_status(data_dir: Option<String>) -> Value {
         "prodKeys": kdir.join("prod.keys").is_file(),
         "titleKeys": kdir.join("title.keys").is_file(),
         "firmwareCount": count_nca(&fdir),
+        // The Home Menu (qlaunch) is bootable only when its NCA can be resolved
+        // from the installed firmware (needs keys + firmware).
+        "homeMenu": resolve_qlaunch_nca(&data).is_some(),
     })
 }
 

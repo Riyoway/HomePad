@@ -1398,6 +1398,7 @@ export async function showSettings(): Promise<void> {
       if (st.titleKeys) container.appendChild(neutralChip("title.keys"));
       const fw = st.firmwareCount || 0;
       container.appendChild(statusChip(fw > 0, fw > 0 ? `Firmware · ${fw} files` : "Firmware not installed"));
+      if (st.homeMenu) container.appendChild(statusChip(true, "Home Menu"));
     },
     actions: [
       {

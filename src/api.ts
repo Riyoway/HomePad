@@ -61,6 +61,7 @@ export const api = {
       prodKeys?: boolean;
       titleKeys?: boolean;
       firmwareCount?: number;
+      homeMenu?: boolean;
     }>("switch_install_status", { dataDir: dataDir ?? null }),
   installSwitchKeys: (dataDir: string, source: string) =>
     invoke<OpResult & { installed?: string[] }>("install_switch_keys", { dataDir, source }),
