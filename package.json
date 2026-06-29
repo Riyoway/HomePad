@@ -2,7 +2,7 @@
   "name": "homepad",
   "productName": "HomePad",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "HomePad is an emulator home system launcher.",
   "type": "module",
   "author": "Riyo",
