@@ -18,8 +18,15 @@ const MSG_CHECK_PATH: &str = "Please check the emulator folder/path in Settings.
 const ERR_EMULATOR_EXE_NOT_FOUND: &str = "Emulator executable not found in the configured folder.";
 const ERR_WIIU_HOME: &str = "Required files for launching the Wii U Home Menu were not found.";
 const ERR_3DS_HOME: &str = "3DS Home Menu file not found. Check 3DS NAND folder in Settings.";
+const ERR_SWITCH_DATA: &str =
+    "Switch data folder not found. Set up the emulator (firmware/keys) in the Installer tab.";
+const ERR_QLAUNCH: &str =
+    "Home Menu (qlaunch) not found in the installed firmware. Install firmware and keys first.";
 
 const HOME_TOKEN: &str = "${homeMenu}";
+// Resolved at launch to the qlaunch (Home Menu) NCA path, for Switch emulators
+// that lack a `-qlaunch` CLI flag (e.g. Citron).
+const QLAUNCH_TOKEN: &str = "${qlaunch}";
 
 struct LaunchPlan {
     exe_full: PathBuf,
@@ -192,6 +199,21 @@ fn build_plan(
             }
         } else {
             let _ = resolve_home_target(system, &cwd)?;
+        }
+
+        // ${qlaunch}: locate the Home Menu NCA in the emulator's installed
+        // firmware and pass its path (for emulators without a -qlaunch flag).
+        if args.iter().any(|a| a.contains(QLAUNCH_TOKEN)) {
+            let emu_id = selected.get("id").and_then(|v| v.as_str()).unwrap_or("");
+            let data = crate::switch::switch_data_dir_for(&cwd, emu_id)
+                .ok_or_else(|| ERR_SWITCH_DATA.to_string())?;
+            let nca = crate::switch::resolve_qlaunch_nca(&data)
+                .ok_or_else(|| ERR_QLAUNCH.to_string())?;
+            for a in args.iter_mut() {
+                if a.contains(QLAUNCH_TOKEN) {
+                    *a = a.replace(QLAUNCH_TOKEN, &nca);
+                }
+            }
         }
     }
 

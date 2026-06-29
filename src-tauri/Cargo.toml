@@ -36,6 +36,10 @@ dirs = "5"
 
 discord-rich-presence = "0.2"
 
+# NCA header decryption (Switch qlaunch resolution).
+aes = "0.8"
+xts-mode = "0.5"
+
 [target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
 tauri-plugin-single-instance = "2"
 

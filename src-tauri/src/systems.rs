@@ -105,7 +105,7 @@ const SYSTEMS_JSON: &str = r##"
         "id": "citron",
         "name": "Citron-Neo",
         "exe": "citron.exe",
-        "args": { "emulator": [], "systemMenu": [], "fullscreen": "-f" },
+        "args": { "emulator": [], "systemMenu": ["-g", "${qlaunch}"], "fullscreen": "-f" },
         "source": { "github": { "owner": "citron-neo", "repo": "emulator", "match": "x64-msvc", "archive": "zip" } }
       },
       {
