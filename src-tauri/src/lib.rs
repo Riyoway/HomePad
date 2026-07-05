@@ -81,7 +81,6 @@ pub fn run() {
             commands::discord_status,
             commands::discord_retry,
             commands::set_fullscreen,
-            commands::get_fullscreen,
             paths::expand_path,
             paths::path_exists,
             validate::suggest_3ds_nand,

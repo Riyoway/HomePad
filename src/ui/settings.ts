@@ -1,21 +1,12 @@
 import { api } from "../api";
 import { showPopup } from "./toast";
-import { playClick, playError, playComplete } from "./sounds";
-import { makeDropdown } from "./dom";
+import { playClick, playError } from "./sounds";
+import { makeDropdown, playExit } from "./dom";
 import type { Settings, EmulatorSettings } from "../types";
 import { ICON_VARIANTS } from "./icons";
 
 let current: Settings = {};
 let systemNames: string[] = [];
-
-function escapeHtml(s: unknown): string {
-  return String(s ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 async function loadSettings(): Promise<Settings> {
   try {
@@ -1631,9 +1622,6 @@ export async function showSettings(): Promise<void> {
           FirmwarePath: dsFWp,
         });
         if (patchDS) {
-          try {
-            console.log("[ipc][ui] melonds:write DS", { dir: dsDir, patch: patchDS });
-          } catch {}
           const w = await api.melondsWrite(dsDir, patchDS);
           if (!w?.ok) throw new Error(w?.error || "Failed to write melonDS DS config");
         }
@@ -1646,9 +1634,6 @@ export async function showSettings(): Promise<void> {
           NANDPath: dsiNANDp,
         });
         if (patchDSi) {
-          try {
-            console.log("[ipc][ui] melonds:write DSi", { dir: dsiDir, patch: patchDSi });
-          } catch {}
           const w2 = await api.melondsWrite(dsiDir, patchDSi);
           if (!w2?.ok) throw new Error(w2?.error || "Failed to write melonDS DSi config");
         }
@@ -1796,13 +1781,20 @@ export async function showSettings(): Promise<void> {
   ov.appendChild(modal);
   document.body.classList.add("modal-open");
 
+  // Not { once: true }: that removed the listener after the first *any* key,
+  // so Esc stopped closing Settings once the user typed in a field. Instead
+  // self-remove when the overlay is gone (mirrors onWinFocus below).
   const onEsc = (e: KeyboardEvent) => {
+    if (!ov.classList.contains("show")) {
+      document.removeEventListener("keydown", onEsc);
+      return;
+    }
     if (e.key === "Escape") {
       e.preventDefault();
       closeSettings();
     }
   };
-  document.addEventListener("keydown", onEsc, { once: true });
+  document.addEventListener("keydown", onEsc);
 
   // Flag any path fields whose value doesn't exist on disk. Re-run when the
   // window regains focus, which fires after a native browse dialog closes, so
@@ -1822,23 +1814,12 @@ export function closeSettings(): void {
   const ov = document.getElementById("overlay");
   if (!ov) return;
   const modal = ov.querySelector<HTMLElement>(".modal");
-  if (modal) {
-    modal.classList.remove("modal-enter");
-    modal.classList.add("modal-exit");
-    modal.addEventListener(
-      "animationend",
-      () => {
-        ov.style.display = "none";
-        ov.innerHTML = "";
-        ov.classList.remove("show");
-        document.body.classList.remove("modal-open");
-      },
-      { once: true }
-    );
-  } else {
+  const done = (): void => {
     ov.style.display = "none";
     ov.innerHTML = "";
     ov.classList.remove("show");
     document.body.classList.remove("modal-open");
-  }
+  };
+  if (modal) playExit(modal, done);
+  else done();
 }

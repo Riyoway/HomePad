@@ -15,8 +15,18 @@ fn parse_ver(s: &str) -> (u64, u64, u64) {
 }
 
 /// Check the GitHub "latest release" and compare it to the running version.
+/// Async + spawn_blocking so the blocking HTTP call never runs on the UI thread
+/// (a slow/firewalled network would otherwise freeze the whole app for ~20s).
 #[tauri::command]
-pub fn check_update() -> Value {
+pub async fn check_update() -> Value {
+    tauri::async_runtime::spawn_blocking(check_update_blocking)
+        .await
+        .unwrap_or_else(|_| {
+            json!({ "ok": false, "error": "join error", "current": env!("CARGO_PKG_VERSION") })
+        })
+}
+
+fn check_update_blocking() -> Value {
     let current = env!("CARGO_PKG_VERSION").to_string();
     let api = format!("https://api.github.com/repos/{REPO}/releases/latest");
 

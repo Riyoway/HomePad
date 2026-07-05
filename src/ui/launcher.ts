@@ -1,6 +1,7 @@
 import { api } from "../api";
 import { showPopup } from "./toast";
 import { playClick, playError, playComplete } from "./sounds";
+import { playExit, escapeHtml } from "./dom";
 import type { Settings, AppPopup } from "../types";
 
 const CTX_ICONS = {
@@ -11,14 +12,6 @@ const CTX_ICONS = {
   folder:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7h6l2 2h10v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg>',
 } as const;
-
-function escapeHtml(s: unknown): string {
-  return String(s).replace(
-    /[&<>"]+/g,
-    (ch) =>
-      (({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }) as Record<string, string>)[ch],
-  );
-}
 
 function getLoadingEl(): HTMLElement | null {
   return document.getElementById("loading-overlay");
@@ -69,16 +62,10 @@ export function showErrorDialog(title = "Error", message = ""): Promise<void> {
     document.body.appendChild(overlay);
 
     const close = () => {
-      modal.classList.remove("jump-in");
-      modal.classList.add("modal-exit");
-      modal.addEventListener(
-        "animationend",
-        () => {
-          overlay.remove();
-          resolve();
-        },
-        { once: true },
-      );
+      playExit(modal, () => {
+        overlay.remove();
+        resolve();
+      });
     };
     modal.querySelector("#btn-ok")?.addEventListener("click", close);
     overlay.addEventListener("click", (e) => {
@@ -223,16 +210,23 @@ export function setupAppsContextMenu(): void {
     );
 
     if (is3ds) {
-      const raw = settings?.emulator?.nandDir || "";
-      const expanded = raw ? await api.expandPath(raw) : "";
-      const ok = expanded ? await api.pathExists(expanded, "dir") : false;
-      const url = ok ? pathToFileUrl(expanded) : "";
+      // Probe failures must not abort the whole menu — just disable the item.
+      let url = "";
+      try {
+        const raw = settings?.emulator?.nandDir || "";
+        const expanded = raw ? await api.expandPath(raw) : "";
+        const ok = expanded ? await api.pathExists(expanded, "dir") : false;
+        url = ok ? pathToFileUrl(expanded) : "";
+      } catch {}
       menu.appendChild(makeItem("Open NAND Folder", () => doOpenFolder(url), !url, CTX_ICONS.folder));
     }
     if (isWiiU) {
-      const mlc = await api.getWiiUMlcPath();
-      const ok = mlc ? await api.pathExists(mlc, "dir") : false;
-      const url = ok ? pathToFileUrl(mlc) : "";
+      let url = "";
+      try {
+        const mlc = await api.getWiiUMlcPath();
+        const ok = mlc ? await api.pathExists(mlc, "dir") : false;
+        url = ok ? pathToFileUrl(mlc) : "";
+      } catch {}
       menu.appendChild(makeItem("Open MLC Folder", () => doOpenFolder(url), !url, CTX_ICONS.folder));
     }
 
@@ -271,6 +265,8 @@ export function setupAppsContextMenu(): void {
   });
 }
 
+let launching = false;
+
 export function setupAppsClickDelegation(): void {
   const strip = document.getElementById("apps");
   if (!strip || strip.dataset.clickDelegation === "1") return;
@@ -295,10 +291,9 @@ export function setupAppsClickDelegation(): void {
       return;
     }
     playClick();
+    if (launching) return;
+    launching = true;
     try {
-      try {
-        console.log("[ui] delegation launch:", name);
-      } catch {}
       showLoading(`Launching ${name}...`);
       const res = await api.launch(name);
       if (!res?.ok) {
@@ -317,6 +312,8 @@ export function setupAppsClickDelegation(): void {
       console.error("Launch error (delegation):", err);
       await showErrorDialog("Launch Error", `Failed to launch ${name}:\n${String(err)}`);
       hideLoading();
+    } finally {
+      launching = false;
     }
   });
 }

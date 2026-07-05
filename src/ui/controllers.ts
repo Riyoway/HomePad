@@ -1,4 +1,5 @@
 import { api } from "../api";
+import { playExit, escapeHtml } from "./dom";
 
 type Pad = Gamepad;
 
@@ -18,10 +19,8 @@ interface PadSnapshot {
 const _ignoredGamepads = new Set<number>();
 
 export function setupGamepadIndicator(): void {
-  const indicator = document.getElementById("controller-indicator");
-  const badge = document.getElementById("controller-count");
   const headerBadge = document.getElementById("controller-count-header");
-  if (!indicator && !headerBadge) return;
+  if (!headerBadge) return;
 
   const getPads = (): Pad[] => {
     const list = (navigator.getGamepads && navigator.getGamepads()) || [];
@@ -32,15 +31,9 @@ export function setupGamepadIndicator(): void {
 
   const update = () => {
     try {
-      const pads = getPads();
-      const count = pads.length;
-      if (badge) badge.textContent = String(count);
-      if (indicator) indicator.style.display = count > 0 ? "inline-flex" : "none";
-      if (headerBadge) headerBadge.textContent = String(count);
+      headerBadge.textContent = String(getPads().length);
     } catch {
-      if (badge) badge.textContent = "0";
-      if (indicator) indicator.style.display = "none";
-      if (headerBadge) headerBadge.textContent = "0";
+      headerBadge.textContent = "0";
     }
   };
 
@@ -216,9 +209,7 @@ export function openControllersModal(): void {
       document.removeEventListener("keydown", onKeydown);
       onKeydown = null;
     }
-    modal.classList.remove("modal-enter");
-    modal.classList.add("modal-exit");
-    modal.addEventListener("animationend", () => overlay.remove(), { once: true });
+    playExit(modal, () => overlay.remove());
   };
 
   modal.querySelector("#btn-close")?.addEventListener("click", () => close());
@@ -280,14 +271,6 @@ function detectPadFeatures(p: Pad): string[] {
   if (wirelessHint && !wiredNegation) feats.push("Wireless");
   if (isDualSense || isSwitch) feats.push("Gyro (likely)");
   return feats;
-}
-
-function escapeHtml(s: unknown): string {
-  return String(s).replace(
-    /[&<>"]+/g,
-    (ch) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch] ?? ch,
-  );
 }
 
 function chip(type: string, label: string, tone = "ok"): string {

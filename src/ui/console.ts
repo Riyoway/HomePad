@@ -30,10 +30,6 @@ function closeTopOverlay(): void {
   document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
 }
 
-export function isConsoleMode(): boolean {
-  return consoleMode;
-}
-
 export async function setConsoleMode(on: boolean): Promise<void> {
   consoleMode = on;
   document.body.classList.toggle("console-mode", on);

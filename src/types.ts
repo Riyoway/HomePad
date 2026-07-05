@@ -89,11 +89,6 @@ export interface DownloadStatus {
   message?: string;
 }
 
-export interface DownloadLog {
-  key?: string | null;
-  message: string;
-}
-
 export interface SysStatus {
   time?: {
     hours: number;

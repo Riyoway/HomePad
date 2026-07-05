@@ -1,17 +1,8 @@
 import { api } from "../api";
 import { showPopup } from "./toast";
 import { playClick, playError, playComplete } from "./sounds";
-import { makeDropdown, type Dropdown, type DropdownOption } from "./dom";
+import { makeDropdown, playExit, type Dropdown, type DropdownOption } from "./dom";
 import type { DownloadStatus, SystemConfig } from "../types";
-
-function escapeHtml(s: unknown): string {
-  return String(s ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 interface ProgRow {
   row: HTMLDivElement;
@@ -76,9 +67,7 @@ export function openDownloaderModal(): void {
       document.removeEventListener("keydown", onKeydown);
       onKeydown = null;
     }
-    modal.classList.remove("modal-enter");
-    modal.classList.add("modal-exit");
-    modal.addEventListener("animationend", () => overlay.remove(), { once: true });
+    playExit(modal, () => overlay.remove());
   };
 
   modal.querySelector("#btn-close-dl")?.addEventListener("click", () => close());
@@ -88,7 +77,9 @@ export function openDownloaderModal(): void {
   onKeydown = (e: KeyboardEvent) => {
     if (e.key === "Escape") close();
   };
-  document.addEventListener("keydown", onKeydown, { once: true });
+  // Not { once: true }: it dropped the handler after the first key press, so
+  // Esc stopped closing the dialog. close() removes it explicitly instead.
+  document.addEventListener("keydown", onKeydown);
 
   const makeStart = (): HTMLButtonElement => {
     const b = document.createElement("button");
@@ -400,11 +391,17 @@ export function openDownloaderModal(): void {
       showPopup("Download completed", "success");
     } else if (s === "error") {
       setDownloading(false);
-      playError();
-      showPopup("Download failed", "error");
+      // Rust signals a user cancel as an error with message "Cancelled" — treat
+      // it as a neutral outcome, and surface the real reason for genuine errors
+      // (404 / blocked host / disk full …) instead of a blank "Download failed".
+      // ponytail: string-matched; switch to a distinct backend phase if one is added.
+      if (p?.message === "Cancelled") {
+        showPopup("Download cancelled", "info");
+      } else {
+        playError();
+        showPopup(p?.message ? `Download failed: ${p.message}` : "Download failed", "error");
+      }
     }
   };
   unsubStatus = api.onDownloadStatus(statusListener);
-
-  void escapeHtml;
 }

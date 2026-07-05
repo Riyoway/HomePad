@@ -1,3 +1,5 @@
+import { playExit } from "./dom";
+
 export function openHelpModal(): void {
   const overlay = document.createElement("div");
   overlay.className = "overlay show";
@@ -44,15 +46,7 @@ export function openHelpModal(): void {
 
   const close = (): void => {
     document.removeEventListener("keydown", onKeydown);
-    modal.classList.remove("jump-in");
-    modal.classList.add("modal-exit");
-    modal.addEventListener(
-      "animationend",
-      () => {
-        overlay.remove();
-      },
-      { once: true },
-    );
+    playExit(modal, () => overlay.remove());
   };
 
   overlay.addEventListener("click", (e) => {
