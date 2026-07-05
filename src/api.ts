@@ -118,7 +118,10 @@ export const api = {
       prerelease?: boolean;
       hasUpdate?: boolean;
       noReleases?: boolean;
+      channel?: "installer" | "portable";
+      installerUrl?: string;
     }>("check_update"),
+  installUpdate: () => invoke<OpResult>("install_update"),
 
   discordRetry: () => invoke<OpResult>("discord_retry"),
   getDiscordStatus: () => invoke<DiscordStatus>("discord_status"),

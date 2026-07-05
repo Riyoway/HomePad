@@ -45,6 +45,9 @@ function openUpdateModal(info: UpdateInfo): void {
   const relName = info.name && String(info.name).trim() ? String(info.name).trim() : `Version ${latest}`;
   const notes = String(info.notes || "").trim();
   const url = info.url || RELEASES_FALLBACK;
+  // Installed builds self-update (download + run the installer); portable builds
+  // (and releases without an installer asset) fall back to the release page.
+  const canAutoUpdate = info.channel === "installer" && !!info.installerUrl;
 
   const overlay = document.createElement("div");
   overlay.className = "overlay show";
@@ -88,8 +91,12 @@ function openUpdateModal(info: UpdateInfo): void {
   const dlBtn = document.createElement("button");
   dlBtn.type = "button";
   dlBtn.className = "hint primary";
-  dlBtn.innerHTML =
-    '<span class="glyph"><svg viewBox="0 0 24 24"><path d="M12 4v10M8 11l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 19h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span><span>Download</span>';
+  const dlIcon =
+    '<span class="glyph"><svg viewBox="0 0 24 24"><path d="M12 4v10M8 11l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 19h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span>';
+  const dlLabel = document.createElement("span");
+  dlLabel.textContent = canAutoUpdate ? "Update & Restart" : "Download";
+  dlBtn.innerHTML = dlIcon;
+  dlBtn.appendChild(dlLabel);
   footer.appendChild(laterBtn);
   footer.appendChild(dlBtn);
 
@@ -114,10 +121,28 @@ function openUpdateModal(info: UpdateInfo): void {
     playClick();
     close();
   });
-  dlBtn.addEventListener("click", () => {
+  dlBtn.addEventListener("click", async () => {
     playClick();
-    void api.openExternal(url);
-    close();
+    if (!canAutoUpdate) {
+      void api.openExternal(url);
+      close();
+      return;
+    }
+    // Installed build: download + run the installer in the background, then the
+    // app exits so it can be replaced. The button stays in a working state; on
+    // success the process is killed by the installer relaunch, on failure we
+    // restore it and surface the reason.
+    dlBtn.disabled = true;
+    laterBtn.disabled = true;
+    dlLabel.textContent = "Downloading…";
+    showPopup("Downloading update… this can take a moment", "info");
+    const res = await api.installUpdate();
+    if (!res?.ok) {
+      showPopup(`Update failed: ${res?.error || "unknown error"}`, "error");
+      dlBtn.disabled = false;
+      laterBtn.disabled = false;
+      dlLabel.textContent = "Update & Restart";
+    }
   });
   document.addEventListener("keydown", onKeydown);
 }
