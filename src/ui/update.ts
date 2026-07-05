@@ -1,6 +1,7 @@
 import { api } from "../api";
 import { showPopup } from "./toast";
 import { playClick } from "./sounds";
+import { playExit } from "./dom";
 
 const RELEASES_FALLBACK = "https://github.com/Riyoway/HomePad/releases";
 
@@ -103,9 +104,7 @@ function openUpdateModal(info: UpdateInfo): void {
   };
   const close = (): void => {
     document.removeEventListener("keydown", onKeydown);
-    modal.classList.remove("jump-in");
-    modal.classList.add("modal-exit");
-    modal.addEventListener("animationend", () => overlay.remove(), { once: true });
+    playExit(modal, () => overlay.remove());
   };
 
   overlay.addEventListener("click", (e) => {

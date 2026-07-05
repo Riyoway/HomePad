@@ -2,15 +2,6 @@ import { api } from "../api";
 import type { SystemConfig } from "../types";
 import { getIconPath } from "./icons";
 
-function escapeHtml(s: string): string {
-  return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
 const PLACEHOLDER_SVG =
   '<svg viewBox="0 0 48 48" class="tile-icon"><rect x="6" y="6" width="36" height="36" rx="8"/></svg>';
 
@@ -21,10 +12,6 @@ export async function renderAppsFromConfig(): Promise<void> {
 
   const cfg = await api.getConfig();
   if (!cfg || typeof cfg !== "object") return;
-
-  try {
-    console.log("[ui] renderAppsFromConfig: systems=", Object.keys(cfg));
-  } catch {}
 
   let settings: Awaited<ReturnType<typeof api.getSettings>> = {};
   try {
@@ -97,9 +84,6 @@ export async function renderAppsFromConfig(): Promise<void> {
     btn.appendChild(label);
 
     const hasPath = !!paths[name];
-    try {
-      console.log("[ui] tile", name, "path=", paths[name] || "(none)", "enabled=", !!hasPath);
-    } catch {}
     if (!hasPath) {
       btn.classList.add("disabled");
       btn.title = "Set emulator folder in Settings";
@@ -109,5 +93,3 @@ export async function renderAppsFromConfig(): Promise<void> {
     container.appendChild(btn);
   }
 }
-
-export { escapeHtml };

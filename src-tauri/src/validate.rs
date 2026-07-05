@@ -36,7 +36,7 @@ pub fn suggest_3ds_nand(state: State<AppState>) -> String {
         return String::new();
     }
     let list_key = serde_json::to_string(&found).unwrap_or_default();
-    let mut cyc = state.nand_cycle.lock().unwrap();
+    let mut cyc = state.nand_cycle.lock().unwrap_or_else(|e| e.into_inner());
     if cyc.list_key == list_key {
         cyc.idx = (cyc.idx + 1) % (found.len() as i64);
     } else {

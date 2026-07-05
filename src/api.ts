@@ -6,7 +6,6 @@ import type {
   OpResult,
   DialogResult,
   DownloadStatus,
-  DownloadLog,
   SysStatus,
   PowerState,
   AppPopup,
@@ -103,7 +102,6 @@ export const api = {
 
   quit: () => invoke("quit_app"),
   setFullscreen: (on: boolean) => invoke<boolean>("set_fullscreen", { on }),
-  getFullscreen: () => invoke<boolean>("get_fullscreen"),
   launch: (systemName: string) => invoke<OpResult>("launch", { systemName }),
   launchAction: (systemName: string, action: string) =>
     invoke<OpResult>("launch_action", { systemName, action }),
@@ -132,7 +130,6 @@ export const api = {
   melondsValidate: (emuDir: string, systemName: string) =>
     invoke<OpResult>("melonds_validate", { emuDir, systemName }),
 
-  onDownloadLog: (cb: (p: DownloadLog) => void) => on<DownloadLog>("download-log", cb),
   onDownloadStatus: (cb: (p: DownloadStatus) => void) => on<DownloadStatus>("download-status", cb),
   onSysStatus: (cb: (p: SysStatus) => void) => on<SysStatus>("sys-status", cb),
   onPowerState: (cb: (p: PowerState) => void) => on<PowerState>("power-state", cb),
@@ -144,5 +141,3 @@ export const api = {
     window.addEventListener("offline", cb);
   },
 };
-
-export type Api = typeof api;

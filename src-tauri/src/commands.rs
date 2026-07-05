@@ -14,13 +14,6 @@ pub fn set_fullscreen(app: AppHandle, on: bool) -> bool {
     on
 }
 
-#[tauri::command]
-pub fn get_fullscreen(app: AppHandle) -> bool {
-    app.get_webview_window("main")
-        .and_then(|w| w.is_fullscreen().ok())
-        .unwrap_or(false)
-}
-
 pub fn emit_popup(app: &AppHandle, kind: &str, message: &str, duration: u32) {
     let _ = app.emit(
         "app-popup",

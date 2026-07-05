@@ -55,6 +55,45 @@ export function setVolume(level: number | null, muted: boolean): void {
   if (w3) w3.style.opacity = waves >= 3 ? "1" : "0.2";
 }
 
+// Plays a modal's exit animation, then runs `done`. Under prefers-reduced-motion
+// the CSS disables the animation, so `animationend` never fires — close at once.
+// The timeout is a fallback for any other case where the event is missed
+// (mirrors the splash/toast handling in main.ts and toast.ts).
+export function playExit(modal: HTMLElement, done: () => void): void {
+  modal.classList.remove("modal-enter", "jump-in");
+  modal.classList.add("modal-exit");
+
+  let finished = false;
+  const finish = (): void => {
+    if (finished) return;
+    finished = true;
+    modal.removeEventListener("animationend", onEnd);
+    done();
+  };
+  const onEnd = (e: AnimationEvent): void => {
+    if (e.target === modal) finish();
+  };
+
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+    finish();
+    return;
+  }
+  modal.addEventListener("animationend", onEnd);
+  window.setTimeout(finish, 250);
+}
+
+// Escapes a value for safe interpolation into innerHTML. Accepts anything
+// (null/undefined -> "") so callers can't accidentally inject the literal
+// string "undefined" into the DOM.
+export function escapeHtml(s: unknown): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export type DropdownOption = string | { value: string; label: string };
 
 export interface Dropdown extends HTMLDivElement {
@@ -135,9 +174,16 @@ export function makeDropdown(placeholder = "Select emulator…"): Dropdown {
     if (root.classList.contains("open")) closeMenu();
     else openMenu();
   });
-  document.addEventListener("click", (e) => {
+  // Self-removing so a rebuilt modal doesn't leak a document listener per
+  // dropdown: once the dropdown is detached from the DOM, drop the handler.
+  const onDocClick = (e: MouseEvent): void => {
+    if (!root.isConnected) {
+      document.removeEventListener("click", onDocClick);
+      return;
+    }
     if (!root.contains(e.target as Node)) closeMenu();
-  });
+  };
+  document.addEventListener("click", onDocClick);
   root.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       closeMenu();
