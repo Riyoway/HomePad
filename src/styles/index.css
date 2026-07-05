@@ -585,7 +585,7 @@ body.console-mode .app-icon .tile-icon {
   position: relative;
   transform: translate(10px, 14px) scale(.96);
   opacity: 0;
-  padding: 8px 10px; border-radius: 10px;
+  padding: 6px 10px; border-radius: 9px;
   border: 1px solid var(--popup-border);
   background: var(--popup-bg);
   color: var(--fg);
@@ -594,9 +594,9 @@ body.console-mode .app-icon .tile-icon {
   font-size: 12px; line-height: 1;
   transition: opacity 140ms ease-out, transform 140ms ease-out;
   will-change: transform, opacity;
-  display: inline-flex; align-items: center; gap: 8px;
+  display: inline-flex; align-items: center; gap: 7px;
 }
-.popup .icon { width: 16px; height: 16px; margin-right: 0; display: inline-block; }
+.popup .icon { width: 15px; height: 15px; margin-right: 0; display: inline-block; }
 .popup .icon path, .popup .icon circle { stroke: currentColor; }
 .popup > span { display: inline; }
 .popup.visible { opacity: 1; transform: translate(0, 0) scale(1); animation: toast-in-diagonal 200ms cubic-bezier(.2,1,.2,1); }
@@ -605,7 +605,7 @@ body.console-mode .app-icon .tile-icon {
 .popup.auto-dismiss.visible::after {
   content: "";
   position: absolute;
-  left: 1px; right: 1px; bottom: 1px; height: 3px;
+  left: 0; right: 0; bottom: 0; height: 3px;
   opacity: .85;
   background: linear-gradient(90deg, var(--accent), #7be3ff);
   border-bottom-left-radius: 9px; border-bottom-right-radius: 9px;
@@ -717,7 +717,7 @@ body.console-mode .app-icon .tile-icon {
 }
 .settings-modal .section-subtitle { font-size: 12px; font-weight: 650; color: var(--fg); opacity: .85; margin: 2px 0 8px; }
 
-.settings-modal .row { grid-template-columns: 210px 1fr; gap: 14px; margin: 9px 0; align-items: center; }
+.settings-modal .row { grid-template-columns: 210px 1fr; gap: 14px; margin: 7px 0; align-items: center; }
 .settings-modal .row.full { grid-template-columns: 1fr; }
 .settings-modal .row .label { font-size: 13px; }
 
@@ -926,8 +926,8 @@ body.console-mode .app-icon .tile-icon {
 .switch-modal .settings-nav::-webkit-scrollbar { width: 0; }
 .switch-modal .nav-item {
   position: relative;
-  display: flex; align-items: center; gap: 12px;
-  width: 100%; padding: 11px 12px;
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 8px 11px;
   border: 0; border-radius: 10px;
   background: transparent; color: var(--fg-muted);
   font-size: 14px; font-weight: 600; text-align: left;
@@ -937,7 +937,7 @@ body.console-mode .app-icon .tile-icon {
 .switch-modal .nav-item:hover { background: var(--btn-bg); color: var(--fg); }
 .switch-modal .nav-item.active { background: var(--btn-bg-hover); color: var(--fg); }
 .switch-modal .nav-item.active::before {
-  content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 3px;
+  content: ""; position: absolute; left: 0; top: 7px; bottom: 7px; width: 3px;
   border-radius: 0 3px 3px 0; background: var(--accent);
 }
 .switch-modal .nav-item:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(63,193,255,.7) inset; }
@@ -949,7 +949,7 @@ body.console-mode .app-icon .tile-icon {
 
 .switch-modal .modal-body .section > .row {
   border-bottom: 1px solid var(--glass-border);
-  padding-bottom: 12px;
+  padding-bottom: 9px;
 }
 .switch-modal .modal-body .section > .row:last-child { border-bottom: 0; }
 /* A subsection heading already draws its own top border; drop the preceding
@@ -974,14 +974,12 @@ body.console-mode .app-icon .tile-icon {
 .switch-modal .hint:active { transform: translateY(0); }
 .switch-modal .hint:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(63,193,255,.6); }
 .switch-modal .hint .glyph {
-  width: 24px; height: 24px; border-radius: 50%;
+  width: 18px; height: 18px;
   display: grid; place-items: center;
-  background: var(--glass-border-strong);
 }
-.switch-modal .hint .glyph svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; }
+.switch-modal .hint .glyph svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; }
 .switch-modal .hint.primary { background: var(--accent); color: var(--accent-contrast); border-color: transparent; }
 .switch-modal .hint.primary:hover { background: var(--accent); filter: brightness(1.08); }
-.switch-modal .hint.primary .glyph { background: rgba(255,255,255,.22); }
 
 /* Update-available dialog. */
 .switch-modal.update-modal { width: min(560px, 92vw); max-height: min(82vh, 600px); height: auto; }

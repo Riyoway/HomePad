@@ -98,7 +98,6 @@ export function openDownloaderModal(): void {
     row.style.display = "none";
     row.style.alignItems = "center";
     row.style.gap = "8px";
-    row.style.marginTop = "8px";
     const wrap = document.createElement("div");
     wrap.className = "progress";
     const inner = document.createElement("div");
@@ -150,7 +149,7 @@ export function openDownloaderModal(): void {
     top.appendChild(startBtn);
     const group = document.createElement("div");
     group.className = "vstack";
-    group.style.gap = "16px";
+    group.style.gap = "8px";
     group.appendChild(top);
     group.appendChild(prog.row);
     container?.appendChild(group);
