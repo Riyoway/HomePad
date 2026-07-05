@@ -78,6 +78,7 @@ pub fn run() {
             commands::quit_app,
             commands::open_external,
             update::check_update,
+            update::install_update,
             commands::discord_status,
             commands::discord_retry,
             commands::set_fullscreen,
