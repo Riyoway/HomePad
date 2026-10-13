@@ -42,6 +42,13 @@ const SYSTEMS_JSON: &str = r##"
         "source": { "github": { "owner": "azahar-emu", "repo": "azahar", "match": "windows-msvc", "archive": "zip" } }
       },
       {
+        "id": "azaharplus",
+        "name": "AzaharPlus",
+        "exe": "azahar.exe",
+        "args": { "emulator": [], "systemMenu": ["${homeMenu}"], "fullscreen": "-f" },
+        "source": { "github": { "owner": "AzaharPlus", "repo": "AzaharPlus", "match": "windows", "archive": "zip" } }
+      },
+      {
         "id": "mandarine",
         "name": "Mandarine",
         "exe": "mandarine-qt.exe",
