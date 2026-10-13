@@ -57,7 +57,7 @@ emulators for the DS, DSi, 3DS, Wii, Wii U, and Switch — all from one place.
 | System | Emulators |
 |--------|-----------|
 | Nintendo DS / DSi | melonDS |
-| Nintendo 3DS | Borked3DS, Azahar, Mandarine |
+| Nintendo 3DS | Borked3DS, Azahar, AzaharPlus, Mandarine |
 | Nintendo Wii | Dolphin |
 | Nintendo Wii U | Cemu |
 | Nintendo Switch | Eden, Citron-Neo, Sudachi, Suyu |
