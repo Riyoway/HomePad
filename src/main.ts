@@ -16,6 +16,7 @@ import { checkForUpdates } from "./ui/update";
 import { setupStatus } from "./ui/status";
 import { setupConsoleMode, toggleConsoleMode } from "./ui/console";
 import { playClick } from "./ui/sounds";
+import { showPopup } from "./ui/toast";
 
 const LINKS = {
   website: "https://github.com/Riyoway/HomePad",
@@ -88,7 +89,9 @@ function wireFooter(): void {
       playClick();
       fn();
     });
-  click("btn-exit", () => api.quit());
+  click("btn-exit", () => {
+    void api.quit().catch(() => showPopup("Could not close HomePad", "error"));
+  });
   click("btn-settings", () => void showSettings());
   click("btn-help", () => openHelpModal());
   click("btn-controllers", () => openControllersModal());

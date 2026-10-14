@@ -25,6 +25,7 @@ pub fn build(app: &App) -> tauri::Result<()> {
     let mut builder = TrayIconBuilder::with_id("main")
         .tooltip("HomePad")
         .menu(&menu)
+        .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id().as_ref() {
             "show" => show_main(app),
             "quit" => app.exit(0),

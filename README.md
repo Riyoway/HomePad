@@ -4,6 +4,8 @@
 
 # HomePad
 
+[English](README.md) | [日本語](README.ja.md)
+
 **A console-style launcher for Nintendo emulators.**
 
 A frameless, controller-friendly dashboard to launch, download, and set up
@@ -49,7 +51,7 @@ emulators for the DS, DSi, 3DS, Wii, Wii U, and Switch — all from one place.
 ### 🎨 Polish & extras
 - **Themes** — dark or light, with selectable **icon colors** (white / black) including an optional **per-console** override.
 - **Discord Rich Presence** — shows the system you're browsing or playing, with a link to the latest release.
-- **System tray** support.
+- **Close to tray** — Exit and window close keep HomePad running in the system tray by default, preserving Discord Rich Presence. Choose **Exit app** under **Settings → General → When closing HomePad** to quit instead; **Quit** in the tray menu always exits completely.
 - **Update checker** — the toolbar checks GitHub for the latest release and shows a clear "update available" dialog with release notes.
 
 ## 🕹️ Supported systems

@@ -1,6 +1,7 @@
 export type Theme = "dark" | "light";
 export type EmuMode = "emulator" | "home";
 export type AfterLaunch = "nothing" | "minimize" | "exit";
+export type ExitBehavior = "tray" | "exit";
 
 export interface AudioSettings {
   mute?: boolean;
@@ -24,6 +25,7 @@ export interface DisplaySettings {
 }
 
 export interface Settings {
+  general?: { exitBehavior?: ExitBehavior };
   audio?: AudioSettings;
   emulator?: EmulatorSettings;
   display?: DisplaySettings;

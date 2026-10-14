@@ -51,6 +51,30 @@ pub fn run() {
     builder
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
+        .on_window_event(|window, event| {
+            if window.label() != "main" {
+                return;
+            }
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                let app = window.app_handle();
+                // Never hide the only window when the tray failed to initialize.
+                if settings::exit_to_tray(&settings::read_settings())
+                    && app.tray_by_id("main").is_some()
+                {
+                    if let Err(e) = window.hide() {
+                        commands::emit_popup(
+                            app,
+                            "error",
+                            &format!("Could not hide HomePad: {e}"),
+                            3200,
+                        );
+                    }
+                } else {
+                    app.exit(0);
+                }
+            }
+        })
         .manage(AppState {
             nand_cycle: Mutex::new(NandCycle::default()),
             switch_cycle: Mutex::new(NandCycle::default()),

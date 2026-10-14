@@ -2,7 +2,7 @@ import { api } from "../api";
 import { showPopup } from "./toast";
 import { playClick, playError } from "./sounds";
 import { makeDropdown, playExit } from "./dom";
-import type { Settings, EmulatorSettings } from "../types";
+import type { Settings, EmulatorSettings, ExitBehavior } from "../types";
 import { ICON_VARIANTS } from "./icons";
 
 let current: Settings = {};
@@ -1186,6 +1186,18 @@ export async function showSettings(): Promise<void> {
   secEmu.appendChild(supWrap);
 
   const secGen = section("General");
+  const exitSel = makeDropdown("Exit behavior");
+  exitSel.setOptions([
+    { value: "tray", label: "Minimize to system tray" },
+    { value: "exit", label: "Exit app" },
+  ]);
+  exitSel.value = current?.general?.exitBehavior === "exit" ? "exit" : "tray";
+  secGen.appendChild(row("When closing HomePad", exitSel));
+  const exitNote = document.createElement("div");
+  exitNote.className = "card-note";
+  exitNote.textContent = "Keeping HomePad in the tray preserves Discord RPC. Use Quit in the tray menu to exit completely.";
+  secGen.appendChild(exitNote);
+
   const discordWrap = document.createElement("label");
   discordWrap.className = "checkbox";
   const discordInput = document.createElement("input");
@@ -1555,6 +1567,10 @@ export async function showSettings(): Promise<void> {
         }
       }
 
+      current.general = {
+        ...current.general,
+        exitBehavior: exitSel.value as ExitBehavior,
+      };
       current.audio = {
         mute: !!audioMuteInput.checked,
         volume: Math.max(0, Math.min(100, parseInt(volumeInput.value, 10) || 0)),

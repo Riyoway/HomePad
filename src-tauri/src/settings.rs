@@ -15,6 +15,7 @@ pub fn settings_path() -> PathBuf {
 
 fn default_settings() -> Value {
     json!({
+        "general": {},
         "audio": {},
         "emulator": {},
         "display": {},
@@ -92,6 +93,14 @@ pub fn discord_enabled(settings: &Value) -> bool {
         != Some(false)
 }
 
+pub fn exit_to_tray(settings: &Value) -> bool {
+    settings
+        .get("general")
+        .and_then(|g| g.get("exitBehavior"))
+        .and_then(|v| v.as_str())
+        != Some("exit")
+}
+
 pub fn download_dir(settings: &Value) -> PathBuf {
     if let Some(dir) = settings
         .get("downloader")
@@ -110,4 +119,19 @@ pub fn download_dir(settings: &Value) -> PathBuf {
         .map(PathBuf::from)
         .unwrap_or_else(config_dir);
     base.join("HomePad").join("Emulators")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn closing_defaults_to_tray_unless_exit_is_selected() {
+        assert!(exit_to_tray(&default_settings()));
+        assert!(exit_to_tray(&json!({ "discord": { "enabled": true } })));
+        assert!(exit_to_tray(&json!({ "general": { "exitBehavior": "tray" } })));
+        assert!(exit_to_tray(&json!({ "general": { "exitBehavior": "unknown" } })));
+        assert!(exit_to_tray(&json!({ "general": { "exitBehavior": null } })));
+        assert!(!exit_to_tray(&json!({ "general": { "exitBehavior": "exit" } })));
+    }
 }

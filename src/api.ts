@@ -100,7 +100,7 @@ export const api = {
   openDir: (options: OpenDialogOptions = {}) => invoke<DialogResult>("open_dir", { options }),
   openFile: (options: OpenDialogOptions = {}) => invoke<DialogResult>("open_file", { options }),
 
-  quit: () => invoke("quit_app"),
+  quit: () => invoke<void>("quit_app"),
   setFullscreen: (on: boolean) => invoke<boolean>("set_fullscreen", { on }),
   launch: (systemName: string) => invoke<OpResult>("launch", { systemName }),
   launchAction: (systemName: string, action: string) =>

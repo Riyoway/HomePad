@@ -52,8 +52,13 @@ pub fn save_settings(state: State<AppState>, settings: Value) -> Value {
 }
 
 #[tauri::command]
-pub fn quit_app(app: AppHandle) {
-    app.exit(0);
+pub fn quit_app(app: AppHandle) -> Result<(), String> {
+    if let Some(w) = app.get_webview_window("main") {
+        w.close().map_err(|e| e.to_string())
+    } else {
+        app.exit(0);
+        Ok(())
+    }
 }
 
 #[tauri::command]
